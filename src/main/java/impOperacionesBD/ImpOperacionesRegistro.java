@@ -1,7 +1,6 @@
 package impOperacionesBD;
 
 import datos.Registro;
-import datos.TipoPosicion;
 import operacionesBD.GenericDAO;
 
 import java.sql.*;

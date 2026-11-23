@@ -13,12 +13,8 @@ import impOperacionesBD.ImpOperacionesRegistro;
 import operacionesBD.GenericDAO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -56,7 +52,6 @@ class GestorPartidaTest {
     }
     @Test
     public void controlarTemporizadorOk() throws InterruptedException {
-        boolean[] ejecutado = {false};
         AtomicBoolean finalizo= new AtomicBoolean(false);
         Runnable accion =  () -> {finalizo.set(true);};
         gestorPartida.controlarTemporizador(3, true, accion);
