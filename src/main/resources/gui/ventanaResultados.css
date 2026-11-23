@@ -1,0 +1,156 @@
+.results-screen {
+    -fx-background-color: white;
+    -fx-font-family: "Pixelify Sans";
+}
+
+/* CABECERA */
+
+.ranking-header {
+    -fx-background-color: #191919;
+    -fx-background-radius: 30;
+    -fx-border-color: #C8C8C8;
+    -fx-border-width: 5;
+    -fx-border-radius: 30;
+    -fx-effect: dropshadow(
+            gaussian, rgba(0, 0, 0, 0.25), 4, 0, 0, 4
+    );
+}
+
+.ranking-title {
+    -fx-font-size: 96px;
+    -fx-text-fill: white;
+}
+
+/* PODIO */
+
+.podium-card {
+    -fx-background-radius: 40 40 0 0;
+    -fx-border-radius: 40 40 0 0;
+    -fx-border-width: 10;
+}
+
+.podium-gold {
+    -fx-background-color: linear-gradient(
+            to bottom,
+            #FFF7D6 0%,
+            #F9EAB1 65%,
+            white 100%
+    );
+    -fx-border-color: #FFC400;
+    -fx-effect: dropshadow(
+            gaussian, rgba(255, 196, 0, 0.45), 20, 0.10, 0, 0
+    );
+}
+
+.podium-silver {
+    -fx-background-color: linear-gradient(
+            to bottom,
+            #E8EDF0 0%,
+            white 100%
+    );
+    -fx-border-color: #A2B3BD;
+    -fx-effect: dropshadow(
+            gaussian, rgba(162, 179, 189, 0.40), 18, 0.10, 0, 0
+    );
+}
+
+.podium-bronze {
+    -fx-background-color: linear-gradient(
+            to bottom,
+            #E6C0A9 0%,
+            white 100%
+    );
+    -fx-border-color: #C3642E;
+    -fx-effect: dropshadow(
+            gaussian, rgba(195, 100, 46, 0.35), 18, 0.10, 0, 0
+    );
+}
+
+.player-name {
+    -fx-font-size: 48px;
+    -fx-text-fill: black;
+}
+
+.podium-points {
+    -fx-font-size: 32px;
+    -fx-text-fill: black;
+}
+
+/* CONTENEDOR DE LA CLASIFICACIÓN */
+
+.ranking-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-border-color: #777777;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(
+            gaussian, rgba(0, 0, 0, 0.15), 4, 0, 0, 4
+    );
+}
+
+.ranking-scroll {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.ranking-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* FILAS */
+
+.ranking-row {
+    -fx-background-color: #1E88E5;
+    -fx-border-color: white;
+    -fx-border-width: 5;
+    -fx-background-insets: 0;
+}
+
+.ranking-text {
+    -fx-font-size: 48px;
+    -fx-text-fill: white;
+    -fx-padding: 0;
+}
+
+.position-cell {
+    -fx-border-color: rgba(25, 25, 25, 0.65);
+    -fx-border-width: 1;
+}
+
+/* RESULTADO DEL JUGADOR */
+
+.my-result {
+    -fx-background-color: rgba(46, 125, 50, 0.85);
+    -fx-background-radius: 10;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(
+            gaussian, rgba(46, 125, 50, 0.45), 24, 0.25, 0, 0
+    );
+}
+
+/* PALETA INFERIOR */
+
+.color-chip {
+    -fx-background-radius: 8;
+}
+
+.chip-red {
+    -fx-background-color: #E53935;
+}
+
+.chip-yellow {
+    -fx-background-color: #FBC02D;
+}
+
+.chip-green {
+    -fx-background-color: #2E7D32;
+}
+
+.chip-blue {
+    -fx-background-color: #1E88E5;
+}

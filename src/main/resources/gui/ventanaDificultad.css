@@ -1,0 +1,152 @@
+.difficulty-screen {
+    -fx-background-color: white;
+    -fx-font-family: "Pixelify Sans";
+}
+
+.brand-title {
+    -fx-font-size: 76px;
+    -fx-text-fill: #191919;
+}
+
+.header-divider {
+    -fx-background-color: #D6D9DB;
+}
+
+.screen-title {
+    -fx-font-size: 64px;
+    -fx-text-fill: #191919;
+}
+
+/* Colores de identidad */
+
+.color-chip {
+    -fx-background-radius: 8;
+}
+
+.chip-red    { -fx-background-color: #E53935; }
+.chip-yellow { -fx-background-color: #FBC02D; }
+.chip-green  { -fx-background-color: #2E7D32; }
+.chip-blue   { -fx-background-color: #1E88E5; }
+
+/* Degradados exteriores: separados de las tarjetas blancas */
+
+.card-halo {
+    -fx-background-radius: 42;
+    -fx-effect: gaussianblur(22);
+}
+
+.halo-green {
+    -fx-background-color: linear-gradient(
+            to bottom,
+            rgba(46, 125, 50, 0.60) 0%,
+            rgba(46, 125, 50, 0.30) 60%,
+            rgba(46, 125, 50, 0.00) 100%
+    );
+}
+
+.halo-yellow {
+    -fx-background-color: linear-gradient(
+            to bottom,
+            rgba(251, 192, 45, 0.60) 0%,
+            rgba(251, 192, 45, 0.30) 60%,
+            rgba(251, 192, 45, 0.00) 100%
+    );
+}
+
+.halo-red {
+    -fx-background-color: linear-gradient(
+            to bottom,
+            rgba(229, 57, 53, 0.60) 0%,
+            rgba(229, 57, 53, 0.30) 60%,
+            rgba(229, 57, 53, 0.00) 100%
+    );
+}
+
+/* Tarjetas */
+
+.difficulty-card {
+    -fx-background-color: white;
+    -fx-background-radius: 30;
+    -fx-border-color: #D6D9DB;
+    -fx-border-width: 2;
+    -fx-border-radius: 30;
+    -fx-effect: dropshadow(
+            gaussian, rgba(0, 0, 0, 0.05), 20, 0, 0, 6
+    );
+}
+
+.card-title {
+    -fx-font-size: 48px;
+    -fx-text-fill: #191919;
+}
+
+.card-description {
+    -fx-font-size: 28px;
+    -fx-text-fill: #4A4D4F;
+}
+
+/* Espacios para imágenes */
+
+.image-slot {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-width: 2;
+    -fx-border-radius: 16;
+    -fx-border-style: segments(8, 6);
+}
+
+.slot-green {
+    -fx-border-color: rgba(46, 125, 50, 0.38);
+}
+
+.slot-yellow {
+    -fx-border-color: rgba(251, 192, 45, 0.50);
+}
+
+.slot-red {
+    -fx-border-color: rgba(229, 57, 53, 0.38);
+}
+
+.image-placeholder {
+    -fx-font-size: 26px;
+    -fx-text-fill: #545759;
+}
+
+/* Botones */
+
+.select-button {
+    -fx-font-size: 34px;
+    -fx-text-fill: #191919;
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-border-color: #191919;
+    -fx-border-width: 2;
+    -fx-border-radius: 20;
+    -fx-cursor: hand;
+}
+
+.select-button:hover {
+    -fx-background-color: #F4F4F4;
+}
+
+.select-button:focused {
+    -fx-border-color: #1E88E5;
+}
+
+.play-button {
+    -fx-font-size: 44px;
+    -fx-text-fill: white;
+    -fx-background-color: #191919;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+.play-button:hover {
+    -fx-background-color: #303030;
+}
+
+.play-button:focused {
+    -fx-border-color: #1E88E5;
+    -fx-border-width: 2;
+    -fx-border-radius: 20;
+}

@@ -1,2 +1,9 @@
 package datos;
-public enum Color { ROJO, NEGRO, VERDE, AMARILLO, AZUL }
+
+public enum Color {
+    ROJO,
+    AMARILLO,
+    VERDE,
+    AZUL,
+    NEGRO
+}

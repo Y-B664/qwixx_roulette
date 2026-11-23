@@ -1,0 +1,255 @@
+
+.game-screen {
+    -fx-background-color: red;
+}
+.game-screen {
+    -fx-background-color: white;
+    -fx-font-family: "Pixelify Sans";
+}
+
+/* CONTROLES SUPERIORES */
+
+.outline-button,
+.dark-button {
+    -fx-font-size: 42px;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(
+            gaussian, rgba(0, 0, 0, 0.20), 4, 0, 0, 4
+    );
+}
+
+.outline-button {
+    -fx-background-color: white;
+    -fx-text-fill: #191919;
+    -fx-border-color: #191919;
+    -fx-border-width: 2;
+}
+
+.dark-button {
+    -fx-background-color: #191919;
+    -fx-text-fill: white;
+}
+
+.outline-button:hover {
+    -fx-background-color: #F2F2F2;
+}
+
+.dark-button:hover {
+    -fx-background-color: #303030;
+}
+
+/* TEMPORIZADOR */
+
+.timer-panel {
+    -fx-background-color: #191919;
+    -fx-background-radius: 24;
+    -fx-border-color: #D9D9D9;
+    -fx-border-width: 4;
+    -fx-border-radius: 24;
+    -fx-effect: dropshadow(
+            gaussian, rgba(0, 0, 0, 0.16), 20, 0, 0, 8
+    );
+}
+
+.timer-caption {
+    -fx-font-size: 26px;
+    -fx-text-fill: #DBDBDB;
+}
+
+.timer-value {
+    -fx-font-size: 96px;
+    -fx-text-fill: white;
+}
+
+.timer-accent {
+    -fx-background-color: #9F4242;
+    -fx-background-radius: 3;
+}
+
+/* TABLERO */
+
+.board-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 30;
+    -fx-border-color: #777777;
+    -fx-border-width: 1;
+    -fx-border-radius: 30;
+    -fx-effect: dropshadow(
+            gaussian, rgba(0, 0, 0, 0.20), 4, 0, 0, 4
+    );
+}
+
+.score-sheet {
+    -fx-background-color: #E8E8E8;
+}
+
+.score-row {
+    -fx-min-height: 100px;
+    -fx-pref-height: 100px;
+    -fx-max-height: 100px;
+    -fx-background-radius: 10;
+}
+
+.red-row    { -fx-background-color: #E53935; }
+.yellow-row { -fx-background-color: #FBC02D; }
+.green-row  { -fx-background-color: #2E7D32; }
+.blue-row   { -fx-background-color: #1E88E5; }
+
+.score-cell {
+    -fx-font-family: "Pirata One";
+    -fx-font-size: 42px;
+    -fx-text-fill: #191919;
+
+    -fx-min-width: 70px;
+    -fx-pref-width: 70px;
+    -fx-max-width: 70px;
+
+    -fx-min-height: 80px;
+    -fx-pref-height: 80px;
+    -fx-max-height: 80px;
+
+    -fx-padding: 0;
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-cursor: hand;
+}
+
+.score-cell:hover {
+    -fx-background-color: #EDEDED;
+}
+
+.score-cell:focused {
+    -fx-border-color: #191919;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+}
+
+.lock-cell {
+    -fx-background-color: #101010;
+}
+
+.lock-cell:hover {
+    -fx-background-color: #303030;
+}
+
+/* POWER-UPS Y TIENDA */
+
+.powerups-button {
+    -fx-font-family: "Pirata One";
+    -fx-font-size: 42px;
+    -fx-background-color: #191919;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.shop-button {
+    -fx-background-color: #191919;
+    -fx-background-radius: 8;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.powerups-button:hover,
+.shop-button:hover {
+    -fx-background-color: #303030;
+}
+
+/* FALLOS */
+
+.failures-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-border-color: #191919;
+    -fx-border-width: 6;
+    -fx-border-radius: 20;
+}
+
+.failure-box {
+    -fx-min-width: 56px;
+    -fx-pref-width: 56px;
+    -fx-max-width: 56px;
+
+    -fx-min-height: 56px;
+    -fx-pref-height: 56px;
+    -fx-max-height: 56px;
+
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #191919;
+    -fx-border-width: 4;
+    -fx-border-radius: 8;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.failure-box:selected {
+    -fx-background-color: #191919;
+}
+
+.failures-title {
+    -fx-font-family: "Pirata One";
+    -fx-font-size: 42px;
+    -fx-text-fill: #191919;
+}
+
+/* PUNTUACIONES */
+
+.total-caption {
+    -fx-font-size: 42px;
+    -fx-text-fill: #191919;
+    -fx-alignment: center-left;
+}
+
+.points-box {
+    -fx-min-width: 75px;
+    -fx-pref-width: 75px;
+    -fx-max-width: 75px;
+    -fx-pref-height: 75px;
+
+    -fx-font-size: 36px;
+    -fx-text-fill: white;
+    -fx-alignment: center;
+}
+
+.red-points     { -fx-background-color: #E53935; }
+.yellow-points  {
+    -fx-background-color: #FBC02D;
+    -fx-text-fill: #191919;
+}
+.green-points   { -fx-background-color: #2E7D32; }
+.blue-points    { -fx-background-color: #1E88E5; }
+.penalty-points { -fx-background-color: #121212; }
+
+.operator {
+    -fx-min-width: 76px;
+    -fx-pref-width: 76px;
+    -fx-pref-height: 75px;
+    -fx-font-size: 42px;
+    -fx-text-fill: #191919;
+    -fx-alignment: center;
+}
+
+.final-total {
+    -fx-min-width: 200px;
+    -fx-pref-width: 200px;
+    -fx-pref-height: 75px;
+    -fx-background-color: #E65BFF;
+    -fx-font-size: 42px;
+    -fx-text-fill: #191919;
+    -fx-alignment: center;
+}
+.roulette-number {
+    -fx-font-family: "Pixelify Sans";
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-alignment: center;
+    -fx-min-width: 45px;
+    -fx-pref-width: 45px;
+    -fx-min-height: 45px;
+    -fx-pref-height: 45px;
+}

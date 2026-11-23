@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+<AnchorPane fx:id="resultadosRoot" minHeight="1165.0" minWidth="1652.0" prefHeight="1165.0" prefWidth="1652.0" styleClass="results-screen" stylesheets="@ventanaResultados.css" xmlns="http://javafx.com/javafx/27.0.1.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VentanaResultadosController">
+
+    <children>
+
+        <!-- Mantiene el contenido principal centrado -->
+        <HBox alignment="CENTER" fillHeight="true" AnchorPane.bottomAnchor="24.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="75.0">
+
+            <children>
+
+                <AnchorPane fx:id="contenidoResultados" maxWidth="938.0" minWidth="938.0" prefWidth="938.0">
+
+                    <children>
+
+                        <!-- CABECERA -->
+                        <AnchorPane fx:id="cabeceraPane" prefHeight="124.0" styleClass="ranking-header" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+                            <children>
+                                <Label alignment="CENTER" styleClass="ranking-title" text="Ranking" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                            </children>
+                        </AnchorPane>
+
+                        <!-- SEGUNDO LUGAR -->
+                        <AnchorPane fx:id="segundoLugarPane" layoutX="2.0" layoutY="332.0" prefHeight="234.0" prefWidth="300.0" styleClass="podium-card, podium-silver">
+
+                            <children>
+
+                                <Label fx:id="segundoNombreLabel" alignment="CENTER" prefHeight="50.0" styleClass="player-name" text="Jugador_2" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="24.0" AnchorPane.topAnchor="92.0" />
+
+                                <Label fx:id="segundoPuntosLabel" alignment="CENTER" prefHeight="50.0" styleClass="podium-points" text="PTS" AnchorPane.bottomAnchor="26.0" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="24.0" />
+
+                            </children>
+                        </AnchorPane>
+
+                        <!-- PRIMER LUGAR -->
+                        <AnchorPane fx:id="primerLugarPane" layoutX="302.0" layoutY="235.0" prefHeight="331.0" prefWidth="300.0" styleClass="podium-card, podium-gold">
+
+                            <children>
+
+                                <Label fx:id="primeroNombreLabel" alignment="CENTER" prefHeight="50.0" styleClass="player-name" text="Jugador_1" AnchorPane.leftAnchor="36.0" AnchorPane.rightAnchor="36.0" AnchorPane.topAnchor="110.0" />
+
+                                <Label fx:id="primeroPuntosLabel" alignment="CENTER" prefHeight="50.0" styleClass="podium-points" text="PTS" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="24.0" />
+
+                            </children>
+                        </AnchorPane>
+
+                        <!-- TERCER LUGAR -->
+                        <AnchorPane fx:id="tercerLugarPane" layoutX="602.0" layoutY="332.0" prefHeight="234.0" prefWidth="300.0" styleClass="podium-card, podium-bronze">
+
+                            <children>
+
+                                <Label fx:id="terceroNombreLabel" alignment="CENTER" prefHeight="50.0" styleClass="player-name" text="Jugador_3" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="24.0" AnchorPane.topAnchor="92.0" />
+
+                                <Label fx:id="terceroPuntosLabel" alignment="CENTER" prefHeight="50.0" styleClass="podium-points" text="PTS" AnchorPane.bottomAnchor="23.0" AnchorPane.leftAnchor="23.0" AnchorPane.rightAnchor="24.0" />
+
+                            </children>
+                        </AnchorPane>
+
+                        <!-- MEDALLAS: delante de las tarjetas -->
+                        <ImageView fx:id="medallaPlataView" fitHeight="183.0" fitWidth="183.0" layoutX="60.0" layoutY="240.0" mouseTransparent="true" preserveRatio="true" smooth="true">
+                            <image>
+                                <Image url="@img/puesto_1.png"/>
+                            </image>
+                        </ImageView>
+
+                        <ImageView fx:id="medallaOroView" fitHeight="183.0" fitWidth="183.0" layoutX="360.0" layoutY="143.0" mouseTransparent="true" preserveRatio="true" smooth="true">
+                            <image>
+                                <Image url="@img/puesto_2.png" />
+                            </image>
+                        </ImageView>
+
+                        <ImageView fx:id="medallaBronceView" fitHeight="183.0" fitWidth="183.0" layoutX="660.0" layoutY="234.0" mouseTransparent="true" preserveRatio="true" smooth="true">
+                            <image>
+                                <Image url="@img/puesto_3.png" />
+                            </image>
+                        </ImageView>
+
+                        <!-- CLASIFICACIÓN -->
+                        <AnchorPane fx:id="clasificacionPane" layoutX="27.0" layoutY="607.0" prefHeight="359.0" prefWidth="899.0" styleClass="ranking-panel">
+
+                            <children>
+
+                                <ScrollPane fx:id="clasificacionScroll" fitToWidth="true" hbarPolicy="NEVER" styleClass="ranking-scroll" vbarPolicy="AS_NEEDED" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
+
+                                    <content>
+
+                                        <!-- Agrega aquí las demás filas -->
+                                        <VBox fx:id="filasRankingVBox" fillWidth="true" spacing="10.0">
+
+                                            <padding>
+                                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                            </padding>
+
+                                            <children>
+
+                                                <AnchorPane fx:id="filaRankingEjemplo" maxHeight="87.0" minHeight="56.0" prefHeight="87.0" prefWidth="875.0" styleClass="ranking-row">
+
+                                                    <children>
+
+                                                        <Label fx:id="posicionFilaLabel" alignment="CENTER" layoutX="51.0" layoutY="3.0" prefHeight="37.0" prefWidth="67.0" styleClass="ranking-text, position-cell" text="4" AnchorPane.leftAnchor="51.0" AnchorPane.topAnchor="3.0" />
+
+                                                        <Label fx:id="nombreFilaLabel" alignment="CENTER" layoutX="151.0" layoutY="5.0" prefHeight="50.0" prefWidth="253.0" styleClass="ranking-text" text="Jugador_2" AnchorPane.leftAnchor="151.0" AnchorPane.topAnchor="5.0" />
+
+                                                        <Label fx:id="puntosFilaLabel" alignment="CENTER_RIGHT" layoutX="375.0" layoutY="6.0" prefHeight="50.0" prefWidth="451.0" styleClass="ranking-text" text="PTS" AnchorPane.rightAnchor="49.0" AnchorPane.topAnchor="6.0" />
+
+                                                    </children>
+                                                </AnchorPane>
+
+                                            </children>
+                                        </VBox>
+
+                                    </content>
+                                </ScrollPane>
+
+                            </children>
+                        </AnchorPane>
+
+                        <!-- POSICIÓN DEL JUGADOR ACTUAL -->
+                        <AnchorPane fx:id="miResultadoPane" layoutX="38.0" layoutY="979.0" prefHeight="70.0" styleClass="my-result" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="38.0" AnchorPane.rightAnchor="21.0">
+
+                            <children>
+
+                                <Label fx:id="miPosicionLabel" alignment="CENTER" prefHeight="64.0" prefWidth="100.0" styleClass="ranking-text, position-cell" text="4" AnchorPane.leftAnchor="36.0" AnchorPane.topAnchor="3.0" />
+
+                                <Label fx:id="miNombreLabel" alignment="CENTER" prefHeight="50.0" prefWidth="378.0" styleClass="ranking-text" text="Tú - Jugador8" AnchorPane.leftAnchor="146.0" AnchorPane.topAnchor="10.0" />
+
+                                <Label fx:id="misPuntosLabel" alignment="CENTER_RIGHT" prefHeight="50.0" prefWidth="312.0" styleClass="ranking-text" text="PTS" AnchorPane.rightAnchor="33.0" AnchorPane.topAnchor="10.0" />
+
+                            </children>
+                        </AnchorPane>
+
+                    </children>
+                </AnchorPane>
+
+            </children>
+        </HBox>
+
+        <!-- COLORES DEL TABLERO -->
+        <HBox alignment="CENTER" spacing="16.0" AnchorPane.bottomAnchor="39.0" AnchorPane.rightAnchor="74.0">
+
+            <children>
+                <Region prefHeight="40.0" prefWidth="40.0" styleClass="color-chip, chip-red" />
+
+                <Region prefHeight="40.0" prefWidth="40.0" styleClass="color-chip, chip-yellow" />
+
+                <Region prefHeight="40.0" prefWidth="40.0" styleClass="color-chip, chip-green" />
+
+                <Region prefHeight="40.0" prefWidth="40.0" styleClass="color-chip, chip-blue" />
+            </children>
+        </HBox>
+
+    </children>
+    <stylesheets>
+        <URL value="@ventanaResultados.css"/>
+    </stylesheets>
+</AnchorPane>
