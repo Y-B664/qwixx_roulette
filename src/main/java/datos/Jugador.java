@@ -2,6 +2,7 @@ package datos;
 
 import datos.carton.Carton;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -10,6 +11,7 @@ import java.util.Stack;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor 
 public class Jugador {
     private String nombreUsuario;
     private int saldoPuntos;

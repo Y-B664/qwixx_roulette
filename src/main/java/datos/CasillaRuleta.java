@@ -1,10 +1,12 @@
 package datos;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor 
 public class CasillaRuleta {
     private int valor;
     private Color color;
@@ -13,9 +15,4 @@ public class CasillaRuleta {
         this.valor = valor;
         this.color = color;
     }
-    public int getValor() { return valor; }
-    public void setValor(int valor) { this.valor = valor; }
-
-    public Color getColor() { return color; }
-    public void setColor(Color color) { this.color = color; }
 }

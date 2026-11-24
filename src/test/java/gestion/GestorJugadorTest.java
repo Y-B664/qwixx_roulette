@@ -2,13 +2,10 @@ package gestion;
 
 import datos.Jugador;
 import datos.Registro;
-import datos.TipoPosicion;
 import impOperacionesBD.ImpOperacionesRegistro;
 import operacionesBD.GenericDAO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.sql.Timestamp;
 import java.util.Stack;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,7 +43,6 @@ class GestorJugadorTest {
     }
     @Test
     public void crearJugadorExistente() {
-        int puesto = (int) (System.nanoTime() % 1000000);
         impOperacionesRegistro.crear(new Registro("Jugador"+timestamp, 50));
         Jugador jugador = gestorJugador.crearJugador("Jugador"+timestamp,new Stack(),gestorCarton.crearCarton(4));
         assertNull(jugador);

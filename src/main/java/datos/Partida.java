@@ -1,6 +1,5 @@
 package datos;
 
-import datos.bot.Bot;
 import lombok.Getter;
 import lombok.Setter;
 

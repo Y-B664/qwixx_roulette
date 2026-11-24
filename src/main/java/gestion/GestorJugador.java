@@ -3,7 +3,6 @@ package gestion;
 import datos.Jugador;
 import datos.Registro;
 import datos.carton.Carton;
-import impOperacionesBD.ImpOperacionesRegistro;
 import lombok.AllArgsConstructor;
 import operacionesBD.GenericDAO;
 
@@ -14,7 +13,7 @@ import java.util.Stack;
 public class GestorJugador {
     GenericDAO<Registro> impOperacionesRegistro;
 
-    public Jugador crearJugador(String nombreUsuario, Stack mazoPowerUps, Carton carton) {
+    public Jugador crearJugador(String nombreUsuario, Stack<?> mazoPowerUps, Carton carton) {
         if( nombreUsuario ==null || nombreUsuario.isBlank() || mazoPowerUps == null || carton == null ){
             return null;
         }

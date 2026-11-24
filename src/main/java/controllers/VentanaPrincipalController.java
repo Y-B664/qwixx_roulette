@@ -22,6 +22,7 @@ public class VentanaPrincipalController {
     @FXML private Button jugarButton;
     @FXML private Button instruccionesButton;
     @FXML private Button rankingButton;
+    private String jugadorEnSesion;
 
     @FXML
     public void initialize() {
@@ -114,5 +115,8 @@ public class VentanaPrincipalController {
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+    public  String getJugadorEnSesion(){
+        return this.jugadorEnSesion;
     }
 }

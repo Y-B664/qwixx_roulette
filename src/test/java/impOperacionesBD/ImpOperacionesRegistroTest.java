@@ -29,7 +29,6 @@ public class ImpOperacionesRegistroTest {
     }
     @Test
     public void crearOk(){
-        List<Registro> registros = impOperacionesRegistro.obtenerTodos();
         int registroCreado = impOperacionesRegistro.crear(new Registro("Test_crear"+timestamp,10*puntuacion));
         assertEquals(1,registroCreado);
     }

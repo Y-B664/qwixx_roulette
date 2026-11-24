@@ -9,7 +9,6 @@ import datos.bot.DificilBot;
 import datos.bot.FacilBot;
 import datos.bot.MedioBot;
 import datos.carton.FilaColor;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

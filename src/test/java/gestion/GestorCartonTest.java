@@ -278,8 +278,6 @@ class GestorCartonTest {
     public void validarCierreCandado5CasillasNoMarcadas(){
         List<FilaColor> filasColor = gestorCarton.generarFilas();
         FilaColor filaColor = filasColor.get(3);
-        CasillaCarton[] casillasCarton = filaColor.getCasillas();
-        CasillaCarton casillaCarton = casillasCarton[2];
         assertFalse(gestorCarton.validarCierreCandado(filaColor));
         assertFalse(filaColor.isEstaBloqueadaGlobal());
         assertFalse(filaColor.isCandadoTachado());
