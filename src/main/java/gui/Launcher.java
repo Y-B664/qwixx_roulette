@@ -33,6 +33,7 @@ public class Launcher extends Application {
 
         primaryStage.setTitle("Qwixx Roulette");
         primaryStage.initStyle(StageStyle.UNDECORATED);
+        primaryStage.setFullScreenExitHint("");
         primaryStage.setScene(crearEscenaAjustada(root));
         primaryStage.centerOnScreen();
         primaryStage.show();
@@ -41,17 +42,16 @@ public class Launcher extends Application {
     public static Scene crearEscenaAjustada(Parent root) {
         Rectangle2D pantalla = Screen.getPrimary().getVisualBounds();
         double altoBarra = 36.0;
-        double anchoOriginal = root.prefWidth(-1);
-        double altoOriginal = root.prefHeight(-1);
+        double anchoOriginal = root.prefWidth(-1) > 0 ? root.prefWidth(-1) : 1652.0;
+        double altoOriginal = root.prefHeight(-1) > 0 ? root.prefHeight(-1) : 1030.0;
 
         double escalaX = (pantalla.getWidth() * 0.90) / anchoOriginal;
         double escalaY = ((pantalla.getHeight() * 0.90) - altoBarra) / altoOriginal;
         double escala = Math.min(1.0, Math.min(escalaX, escalaY));
 
-        root.getTransforms().add(new Scale(escala, escala, 0, 0));
+        root.getTransforms().setAll(new Scale(escala, escala, 0, 0));
         Group contenidoEscalado = new Group(root);
 
-        // Barra superior personalizada con Minimizar, Maximizar/Pantalla Completa y Cerrar
         HBox barraSuperior = crearBarraVentana(contenidoEscalado, anchoOriginal, altoOriginal, altoBarra);
 
         BorderPane contenedorPrincipal = new BorderPane();
@@ -60,6 +60,24 @@ public class Launcher extends Application {
         contenedorPrincipal.setStyle("-fx-background-color: white; -fx-border-color: #D6D9DB; -fx-border-width: 1;");
 
         return new Scene(contenedorPrincipal, anchoOriginal * escala, (altoOriginal * escala) + altoBarra);
+    }
+
+    private static void aplicarEscala(Group contenidoEscalado, double anchoOriginal, double altoOriginal,
+                                      double altoBarra, boolean pantallaCompleta) {
+        Rectangle2D bounds = pantallaCompleta
+                ? Screen.getPrimary().getBounds()
+                : Screen.getPrimary().getVisualBounds();
+        double factor = pantallaCompleta ? 1.0 : 0.90;
+
+        double escalaX = (bounds.getWidth() * factor) / anchoOriginal;
+        double escalaY = ((bounds.getHeight() * factor) - altoBarra) / altoOriginal;
+        double escala = Math.min(escalaX, escalaY);
+        if (!pantallaCompleta) {
+            escala = Math.min(1.0, escala);
+        }
+
+        Parent fxmlRoot = (Parent) contenidoEscalado.getChildren().get(0);
+        fxmlRoot.getTransforms().setAll(new Scale(escala, escala, 0, 0));
     }
 
     private static HBox crearBarraVentana(Group contenidoEscalado, double anchoOriginal, double altoOriginal, double altoBarra) {
@@ -79,42 +97,29 @@ public class Launcher extends Application {
         Button btnMaximizar = crearBotonBarra("☐", "#333333");
         Button btnCerrar = crearBotonBarra("✕", "#E53935");
 
-        // Minimizar ventana
         btnMinimizar.setOnAction(e -> {
             Stage stage = (Stage) btnMinimizar.getScene().getWindow();
+            if (stage.isFullScreen()) {
+                stage.setFullScreen(false);
+                btnMaximizar.setText("☐");
+                aplicarEscala(contenidoEscalado, anchoOriginal, altoOriginal, altoBarra, false);
+            }
             stage.setIconified(true);
         });
 
-        // Alternar Pantalla Completa / Tamaño Normal
         btnMaximizar.setOnAction(e -> {
             Stage stage = (Stage) btnMaximizar.getScene().getWindow();
             boolean irPantallaCompleta = !stage.isFullScreen();
             stage.setFullScreen(irPantallaCompleta);
             btnMaximizar.setText(irPantallaCompleta ? "❐" : "☐");
-
-            Rectangle2D bounds = irPantallaCompleta
-                    ? Screen.getPrimary().getBounds()
-                    : Screen.getPrimary().getVisualBounds();
-            double factor = irPantallaCompleta ? 1.0 : 0.90;
-
-            double nuevaEscalaX = (bounds.getWidth() * factor) / anchoOriginal;
-            double nuevaEscalaY = ((bounds.getHeight() * factor) - altoBarra) / altoOriginal;
-            double nuevaEscala = Math.min(nuevaEscalaX, nuevaEscalaY);
-            if (!irPantallaCompleta) {
-                nuevaEscala = Math.min(1.0, nuevaEscala);
-            }
-
-            Parent fxmlRoot = (Parent) contenidoEscalado.getChildren().get(0);
-            fxmlRoot.getTransforms().setAll(new Scale(nuevaEscala, nuevaEscala, 0, 0));
+            aplicarEscala(contenidoEscalado, anchoOriginal, altoOriginal, altoBarra, irPantallaCompleta);
         });
 
-        // Cerrar aplicación
         btnCerrar.setOnAction(e -> {
             Platform.exit();
             System.exit(0);
         });
 
-        // Permitir arrastrar la ventana desde la barra superior
         barra.setOnMousePressed(e -> {
             offsetX = e.getSceneX();
             offsetY = e.getSceneY();
