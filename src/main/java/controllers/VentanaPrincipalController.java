@@ -104,6 +104,7 @@ public class VentanaPrincipalController {
             stage.setScene(Launcher.crearEscenaAjustada(root));
             stage.centerOnScreen();
         } catch (IOException ex) {
+            ex.printStackTrace();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Ranking",
                     "La vista de Ranking estará disponible en cuanto se integre VentanaResultados.");
         }
