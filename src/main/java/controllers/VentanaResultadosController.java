@@ -113,8 +113,15 @@ public class VentanaResultadosController {
         return label;
     }
     private void miPuntuacion(){
-        miPosicionLabel.setText("12");
-        miNombreLabel.setText(ventanaPrincipalController.getJugadorEnSesion());
-        miPosicionLabel.setText("12");
+        String nombre =  ventanaPrincipalController.getJugadorEnSesion();
+        if (nombre.isBlank()){
+            miNombreLabel.setText("N/D");
+            miPosicionLabel.setText("N/D");
+            misPuntosLabel.setText("N/D");
+        }else{
+            miNombreLabel.setText(nombre);
+            miPosicionLabel.setText("12");
+            miPosicionLabel.setText("12");
+        }
     }
 }
