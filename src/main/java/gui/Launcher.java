@@ -45,25 +45,52 @@ public class Launcher extends Application {
         double anchoOriginal = root.prefWidth(-1) > 0 ? root.prefWidth(-1) : 1652.0;
         double altoOriginal = root.prefHeight(-1) > 0 ? root.prefHeight(-1) : 1030.0;
 
-        double escalaX = (pantalla.getWidth() * 0.90) / anchoOriginal;
-        double escalaY = ((pantalla.getHeight() * 0.90) - altoBarra) / altoOriginal;
-        double escala = Math.min(1.0, Math.min(escalaX, escalaY));
-
-        root.getTransforms().setAll(new Scale(escala, escala, 0, 0));
+        double escalaInicial = calcularEscala(anchoOriginal, altoOriginal, altoBarra, false);
+        root.getTransforms().setAll(new Scale(escalaInicial, escalaInicial, 0, 0));
         Group contenidoEscalado = new Group(root);
 
-        HBox barraSuperior = crearBarraVentana(contenidoEscalado, anchoOriginal, altoOriginal, altoBarra);
+        Button btnMinimizar = crearBotonBarra("—", "#333333");
+        Button btnMaximizar = crearBotonBarra("☐", "#333333");
+        Button btnCerrar = crearBotonBarra("✕", "#E53935");
+
+        HBox barraSuperior = crearBarraVentana(
+                contenidoEscalado, anchoOriginal, altoOriginal, altoBarra,
+                btnMinimizar, btnMaximizar, btnCerrar
+        );
 
         BorderPane contenedorPrincipal = new BorderPane();
         contenedorPrincipal.setTop(barraSuperior);
         contenedorPrincipal.setCenter(contenidoEscalado);
         contenedorPrincipal.setStyle("-fx-background-color: white; -fx-border-color: #D6D9DB; -fx-border-width: 1;");
 
-        return new Scene(contenedorPrincipal, anchoOriginal * escala, (altoOriginal * escala) + altoBarra);
+        double anchoVentana = anchoOriginal * escalaInicial;
+        double altoVentana = (altoOriginal * escalaInicial) + altoBarra;
+        Scene scene = new Scene(contenedorPrincipal, anchoVentana, altoVentana);
+
+        // Sincroniza escala, botón y tamaño de ventana al entrar o salir de pantalla completa (incluyendo ESC)
+        scene.windowProperty().addListener((obsWin, oldWin, newWin) -> {
+            if (newWin instanceof Stage stage) {
+                stage.fullScreenProperty().addListener((obsFs, wasFs, isFs) -> {
+                    double escalaActual = calcularEscala(anchoOriginal, altoOriginal, altoBarra, isFs);
+                    root.getTransforms().setAll(new Scale(escalaActual, escalaActual, 0, 0));
+                    btnMaximizar.setText(isFs ? "❐" : "☐");
+
+                    if (!isFs) {
+                        double w = anchoOriginal * escalaActual;
+                        double h = (altoOriginal * escalaActual) + altoBarra;
+                        stage.setWidth(w);
+                        stage.setHeight(h);
+                        stage.centerOnScreen();
+                    }
+                });
+            }
+        });
+
+        return scene;
     }
 
-    private static void aplicarEscala(Group contenidoEscalado, double anchoOriginal, double altoOriginal,
-                                      double altoBarra, boolean pantallaCompleta) {
+    private static double calcularEscala(double anchoOriginal, double altoOriginal,
+                                         double altoBarra, boolean pantallaCompleta) {
         Rectangle2D bounds = pantallaCompleta
                 ? Screen.getPrimary().getBounds()
                 : Screen.getPrimary().getVisualBounds();
@@ -75,12 +102,11 @@ public class Launcher extends Application {
         if (!pantallaCompleta) {
             escala = Math.min(1.0, escala);
         }
-
-        Parent fxmlRoot = (Parent) contenidoEscalado.getChildren().get(0);
-        fxmlRoot.getTransforms().setAll(new Scale(escala, escala, 0, 0));
+        return escala;
     }
 
-    private static HBox crearBarraVentana(Group contenidoEscalado, double anchoOriginal, double altoOriginal, double altoBarra) {
+    private static HBox crearBarraVentana(Group contenidoEscalado, double anchoOriginal, double altoOriginal,
+                                          double altoBarra, Button btnMinimizar, Button btnMaximizar, Button btnCerrar) {
         HBox barra = new HBox(6);
         barra.setPrefHeight(altoBarra);
         barra.setAlignment(Pos.CENTER_RIGHT);
@@ -93,26 +119,17 @@ public class Launcher extends Application {
         Region espaciador = new Region();
         HBox.setHgrow(espaciador, Priority.ALWAYS);
 
-        Button btnMinimizar = crearBotonBarra("—", "#333333");
-        Button btnMaximizar = crearBotonBarra("☐", "#333333");
-        Button btnCerrar = crearBotonBarra("✕", "#E53935");
-
         btnMinimizar.setOnAction(e -> {
             Stage stage = (Stage) btnMinimizar.getScene().getWindow();
             if (stage.isFullScreen()) {
                 stage.setFullScreen(false);
-                btnMaximizar.setText("☐");
-                aplicarEscala(contenidoEscalado, anchoOriginal, altoOriginal, altoBarra, false);
             }
             stage.setIconified(true);
         });
 
         btnMaximizar.setOnAction(e -> {
             Stage stage = (Stage) btnMaximizar.getScene().getWindow();
-            boolean irPantallaCompleta = !stage.isFullScreen();
-            stage.setFullScreen(irPantallaCompleta);
-            btnMaximizar.setText(irPantallaCompleta ? "❐" : "☐");
-            aplicarEscala(contenidoEscalado, anchoOriginal, altoOriginal, altoBarra, irPantallaCompleta);
+            stage.setFullScreen(!stage.isFullScreen());
         });
 
         btnCerrar.setOnAction(e -> {
