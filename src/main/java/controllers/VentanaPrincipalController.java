@@ -1,6 +1,8 @@
 package controllers;
 
+import datos.Registro;
 import gui.Launcher;
+import impOperacionesBD.ImpOperacionesRegistro;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,6 +13,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.List;
 
 public class VentanaPrincipalController {
 
@@ -37,6 +40,13 @@ public class VentanaPrincipalController {
             return;
         }
 
+        if (existeUsuarioEnRanking(nombre)) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Nombre ya registrado",
+                    "El nombre \"" + nombre + "\" ya existe en el ranking. Ingresa uno diferente para no sobrescribir puntuaciones.");
+            nombreUsuarioField.requestFocus();
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ventanaDificultad.fxml"));
             Parent root = loader.load();
@@ -52,6 +62,24 @@ public class VentanaPrincipalController {
             mostrarAlerta(Alert.AlertType.ERROR, "Error de navegación",
                     "No se pudo cargar la pantalla de selección de dificultad.");
         }
+    }
+
+    private boolean existeUsuarioEnRanking(String nombre) {
+        try {
+            ImpOperacionesRegistro dao = new ImpOperacionesRegistro();
+            List<Registro> registros = dao.obtenerTodos();
+            if (registros != null) {
+                for (Registro r : registros) {
+                    if (r != null && r.getNombre() != null &&
+                            r.getNombre().trim().equalsIgnoreCase(nombre)) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Aviso al validar usuario en BD: " + ex.getMessage());
+        }
+        return false;
     }
 
     private void mostrarInstrucciones() {

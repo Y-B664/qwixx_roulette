@@ -7,6 +7,7 @@ import gestion.GestorApuesta;
 import gestion.GestorRuleta;
 import gestion.GestorStack;
 import gestion.GestorTienda;
+import gui.IndicadorTurnoUI;
 import gui.Launcher;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -63,15 +64,17 @@ public class VentanaDificultadController {
 
     private String nombreJugador = "Jugador";
     private String dificultadSeleccionada = null;
+    private String nombreBotRival = "Drako";
+    private boolean actualizandoSeleccion = false;
 
     private final GestorRuleta gestorRuleta = new GestorRuleta();
     private final GestorApuesta gestorApuesta = new GestorApuesta();
     private final GestorTienda gestorTienda = new GestorTienda();
     private final GestorStack gestorStack = new GestorStack();
 
-    private Image drakoPng, drakoGif;
-    private Image azraelPng, azraelGif;
-    private Image valtharionPng, valtharionGif;
+    private Image drakoPng;
+    private Image azraelPng;
+    private Image valtharionPng;
 
     public void setNombreJugador(String nombreJugador) {
         this.nombreJugador = nombreJugador;
@@ -80,6 +83,7 @@ public class VentanaDificultadController {
     @FXML
     public void initialize() {
         cargarImagenesBots();
+        configurarTamanoImagenes();
         configurarEventosTarjetas();
         configurarBotonVolver();
         jugarButton.setOnAction(e -> confirmarYPrepararPartida());
@@ -113,35 +117,58 @@ public class VentanaDificultadController {
 
     private void cargarImagenesBots() {
         drakoPng = cargarImagen("/gui/img/bots/Drako.png");
-        drakoGif = cargarImagen("/gui/img/bots/Drako.gif");
-
         azraelPng = cargarImagen("/gui/img/bots/Azrael.png");
-        azraelGif = cargarImagen("/gui/img/bots/Azrael.gif");
-
         valtharionPng = cargarImagen("/gui/img/bots/Valtharion.png");
-        valtharionGif = cargarImagen("/gui/img/bots/Valtharion.gif");
+
+        setImagenSegura(imagenFacilView, drakoPng);
+        setImagenSegura(imagenMediaView, azraelPng);
+        setImagenSegura(imagenDificilView, valtharionPng);
+    }
+
+    private void configurarTamanoImagenes() {
+        configurarView(imagenFacilView);
+        configurarView(imagenMediaView);
+        configurarView(imagenDificilView);
+    }
+
+    private void configurarView(ImageView view) {
+        if (view != null) {
+            view.setFitWidth(140);
+            view.setFitHeight(140);
+            view.setPreserveRatio(true);
+        }
     }
 
     private Image cargarImagen(String ruta) {
         URL url = getClass().getResource(ruta);
-        return (url != null) ? new Image(url.toExternalForm()) : null;
+        return (url != null) ? new Image(url.toExternalForm(), true) : null;
+    }
+
+    private void setImagenSegura(ImageView view, Image nuevaImagen) {
+        if (view != null && nuevaImagen != null && view.getImage() != nuevaImagen) {
+            view.setImage(nuevaImagen);
+        }
+    }
+
+    private String obtenerNombreBotPorDificultad(String nivel) {
+        if ("Medio".equals(nivel)) {
+            return "Azrael";
+        }
+        if ("Difícil".equals(nivel)) {
+            return "Valtharion";
+        }
+        return "Drako";
     }
 
     private void configurarEventosTarjetas() {
-        facilCard.setOnMouseEntered(e -> { if (drakoGif != null) imagenFacilView.setImage(drakoGif); });
-        facilCard.setOnMouseExited(e -> {
-            if (!"Fácil".equals(dificultadSeleccionada) && drakoPng != null) imagenFacilView.setImage(drakoPng);
-        });
+        facilCard.setOnMouseEntered(e -> setImagenSegura(imagenFacilView, drakoPng));
+        facilCard.setOnMouseExited(e -> setImagenSegura(imagenFacilView, drakoPng));
 
-        mediaCard.setOnMouseEntered(e -> { if (azraelGif != null) imagenMediaView.setImage(azraelGif); });
-        mediaCard.setOnMouseExited(e -> {
-            if (!"Medio".equals(dificultadSeleccionada) && azraelPng != null) imagenMediaView.setImage(azraelPng);
-        });
+        mediaCard.setOnMouseEntered(e -> setImagenSegura(imagenMediaView, azraelPng));
+        mediaCard.setOnMouseExited(e -> setImagenSegura(imagenMediaView, azraelPng));
 
-        dificilCard.setOnMouseEntered(e -> { if (valtharionGif != null) imagenDificilView.setImage(valtharionGif); });
-        dificilCard.setOnMouseExited(e -> {
-            if (!"Difícil".equals(dificultadSeleccionada) && valtharionPng != null) imagenDificilView.setImage(valtharionPng);
-        });
+        dificilCard.setOnMouseEntered(e -> setImagenSegura(imagenDificilView, valtharionPng));
+        dificilCard.setOnMouseExited(e -> setImagenSegura(imagenDificilView, valtharionPng));
 
         seleccionarFacilButton.setOnAction(e -> seleccionarDificultad("Fácil"));
         seleccionarMediaButton.setOnAction(e -> seleccionarDificultad("Medio"));
@@ -149,20 +176,33 @@ public class VentanaDificultadController {
     }
 
     private void seleccionarDificultad(String nivel) {
-        this.dificultadSeleccionada = nivel;
-
-        seleccionarFacilButton.setText(nivel.equals("Fácil") ? "Seleccionado ✓" : "Seleccionar");
-        seleccionarMediaButton.setText(nivel.equals("Medio") ? "Seleccionado ✓" : "Seleccionar");
-        seleccionarDificilButton.setText(nivel.equals("Difícil") ? "Seleccionado ✓" : "Seleccionar");
-
-        if (drakoGif != null && drakoPng != null) {
-            imagenFacilView.setImage(nivel.equals("Fácil") ? drakoGif : drakoPng);
+        if (actualizandoSeleccion || nivel.equals(this.dificultadSeleccionada)) {
+            return;
         }
-        if (azraelGif != null && azraelPng != null) {
-            imagenMediaView.setImage(nivel.equals("Medio") ? azraelGif : azraelPng);
-        }
-        if (valtharionGif != null && valtharionPng != null) {
-            imagenDificilView.setImage(nivel.equals("Difícil") ? valtharionGif : valtharionPng);
+        actualizandoSeleccion = true;
+        try {
+            this.dificultadSeleccionada = nivel;
+            this.nombreBotRival = obtenerNombreBotPorDificultad(nivel);
+
+            String textoFacil = "Fácil".equals(nivel) ? "Seleccionado ✓" : "Seleccionar";
+            String textoMedia = "Medio".equals(nivel) ? "Seleccionado ✓" : "Seleccionar";
+            String textoDificil = "Difícil".equals(nivel) ? "Seleccionado ✓" : "Seleccionar";
+
+            if (!textoFacil.equals(seleccionarFacilButton.getText())) {
+                seleccionarFacilButton.setText(textoFacil);
+            }
+            if (!textoMedia.equals(seleccionarMediaButton.getText())) {
+                seleccionarMediaButton.setText(textoMedia);
+            }
+            if (!textoDificil.equals(seleccionarDificilButton.getText())) {
+                seleccionarDificilButton.setText(textoDificil);
+            }
+
+            setImagenSegura(imagenFacilView, drakoPng);
+            setImagenSegura(imagenMediaView, azraelPng);
+            setImagenSegura(imagenDificilView, valtharionPng);
+        } finally {
+            actualizandoSeleccion = false;
         }
     }
 
@@ -184,12 +224,53 @@ public class VentanaDificultadController {
 
         gestorApuesta.hacerApuesta(apuestaInicial);
 
+        IndicadorTurnoUI indicadorTurno = new IndicadorTurnoUI(
+                nombreJugador, nombreBotRival, dificultadSeleccionada
+        );
+        indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
+
         String nombreComodin = (comodinInicial != null) ? comodinInicial.getNombre() : "Comodín aleatorio listo";
-        mostrarAlerta(Alert.AlertType.INFORMATION, "¡Partida Lista!",
-                "Jugador: " + nombreJugador +
-                        "\nBot rival: " + dificultadSeleccionada +
-                        "\nApuesta inicial: " + apuestaInicial.getMonto() + " pts a " + apuestaInicial.getPrediccion() +
-                        "\nComodín inicial otorgado: " + nombreComodin);
+        mostrarResumenConIndicador(indicadorTurno, apuestaInicial, nombreComodin);
+    }
+
+    private void mostrarResumenConIndicador(IndicadorTurnoUI indicadorTurno, Apuesta apuestaInicial, String nombreComodin) {
+        Stage dialog = new Stage();
+        dialog.initOwner(jugarButton.getScene().getWindow());
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+
+        VBox box = new VBox(14);
+        box.setAlignment(Pos.CENTER);
+        box.setPadding(new Insets(26, 30, 26, 30));
+        box.setStyle("""
+                -fx-background-color: #FFFFFF;
+                -fx-background-radius: 24;
+                -fx-border-color: #191919;
+                -fx-border-width: 3;
+                -fx-border-radius: 24;
+                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 6);
+                """);
+
+        Label titulo = new Label("¡PARTIDA LISTA!");
+        titulo.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #191919;");
+
+        Label detalle = new Label(
+                "Apuesta inicial: " + apuestaInicial.getMonto() + " pts a " + apuestaInicial.getPrediccion() +
+                        "\nComodín inicial otorgado: " + nombreComodin
+        );
+        detalle.setStyle("-fx-font-size: 14px; -fx-text-fill: #333333;");
+
+        Button btnAceptar = new Button("Continuar");
+        btnAceptar.setPrefSize(150, 42);
+        btnAceptar.setStyle("-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 14; -fx-cursor: hand;");
+        btnAceptar.setOnAction(e -> dialog.close());
+
+        box.getChildren().addAll(titulo, indicadorTurno.getContenedor(), detalle, btnAceptar);
+
+        Scene scene = new Scene(box);
+        scene.setFill(Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 
     private Apuesta solicitarApuestaInicialJavaFX() {
@@ -215,10 +296,9 @@ public class VentanaDificultadController {
         Label lblTitulo = new Label("APUESTA INICIAL OBLIGATORIA");
         lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #191919;");
 
-        Label lblSub = new Label("Saldo inicial: 5 puntos de casino • Rival: " + dificultadSeleccionada);
+        Label lblSub = new Label("Saldo inicial: 5 puntos de casino • Rival: " + nombreBotRival + " (" + dificultadSeleccionada + ")");
         lblSub.setStyle("-fx-font-size: 14px; -fx-text-fill: #555555;");
 
-        // 1. Tipo de Apuesta
         ToggleGroup grupoTipo = new ToggleGroup();
         ToggleButton btnTipoColor = new ToggleButton("COLOR (x2)");
         ToggleButton btnTipoParidad = new ToggleButton("PAR / IMPAR (x2)");
@@ -234,7 +314,6 @@ public class VentanaDificultadController {
         HBox boxTipos = new HBox(10, btnTipoColor, btnTipoParidad, btnTipoNumero);
         boxTipos.setAlignment(Pos.CENTER);
 
-        // 2. Predicción dinámica
         StackPane panelPrediccion = new StackPane();
         panelPrediccion.setPrefHeight(56);
 
@@ -274,7 +353,6 @@ public class VentanaDificultadController {
 
         panelPrediccion.getChildren().addAll(boxColores, boxParidad, txtNumero);
 
-        // 3. Fichas de monto (1 a 5 puntos)
         Label lblMonto = new Label("¿Cuántos puntos apuestas?");
         lblMonto.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #191919;");
 
@@ -290,7 +368,6 @@ public class VentanaDificultadController {
             boxFichas.getChildren().add(ficha);
         }
 
-        // Indicador en vivo de lo seleccionado
         Label lblResumen = new Label();
         lblResumen.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
 
@@ -362,7 +439,6 @@ public class VentanaDificultadController {
 
         refrescarVisual.run();
 
-        // 4. Botones de acción
         Button btnCancelar = new Button("Cancelar");
         btnCancelar.setPrefSize(140, 46);
         btnCancelar.setStyle("-fx-background-color: #EFEFEF; -fx-text-fill: #191919; -fx-font-size: 15px; -fx-background-radius: 16; -fx-cursor: hand;");
