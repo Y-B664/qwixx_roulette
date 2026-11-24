@@ -6,13 +6,16 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import lombok.Getter;
 
+@Getter
 public class IndicadorTurnoUI {
 
     private final HBox contenedor;
     private final Circle indicadorEstado;
     private final Label lblQuienJuega;
     private final Label lblParticipantes;
+    private final String jugador="";
 
     public IndicadorTurnoUI(String nombreJugador, String nombreBot, String dificultadBot) {
         this.contenedor = new HBox(10);
