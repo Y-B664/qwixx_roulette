@@ -2,12 +2,17 @@
 package controllers;
 
 import datos.*;
+import datos.carton.Carton;
+import datos.carton.CasillaCarton;
+import datos.carton.FilaColor;
 import gestion.*;
 import gui.IndicadorTurnoUI;
 import impOperacionesBD.ImpOperacionesRegistro;
+import javafx.animation.KeyFrame;
 import javafx.animation.RotateTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -24,14 +29,23 @@ import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
+import java.util.function.Consumer;
 
 public class VentanaJuegoController {
 
     @FXML private AnchorPane juegoRoot;
     @FXML private Group ruletaGroup;
     @FXML private Button confirmarGiroButton;
+    @FXML private  Label temporizadorLabel;
+    @FXML private Label saldoJugadorLabel;
+    @FXML private HBox filaRoja;
+    @FXML private HBox filaAmarilla;
+    @FXML private HBox filaVerde;
+    @FXML private HBox filaAzul;
     private final ImpOperacionesRegistro impOperacionesRegistro = new ImpOperacionesRegistro();
     private final GestorRuleta gestorRuleta = new GestorRuleta();
     private final GestorApuesta gestorApuesta = new GestorApuesta();
@@ -43,12 +57,17 @@ public class VentanaJuegoController {
     private boolean primeraVez;
     private boolean giroConfirmado;
     private Timeline temporizador;
-    private int segundosRestantes = 60;
+    private int totalSegundos;
+    private int segundosRestantes;
     private int numeroTurno = 0;
     private String nombreJugador;
     private String nombreBotRival;
     private Dificultad dificultadBot;
     private Ruleta ruleta;
+    private Carton cartonJugador;
+    private boolean temporizadorActivo = false;
+    private Jugador jugador;
+    private CasillaRuleta resultadoActual;
 
 
     public void configurarPartida(String nombreJugador, Dificultad dificultadBot) {
@@ -71,11 +90,10 @@ public class VentanaJuegoController {
                     "Una vez realizada tu apuesta, estarás listo para continuar con el juego.";
             mostrarModalInstruccion("Puntos iniciales",instruccion);
         }
-        girarRuleta();
-
-
-        Jugador jugador = gestorJugador.crearJugador(nombreJugador,new Stack(),gestorCarton.crearCarton(4));
-        gestorPartida.iniciarPartida(2,jugador);
+        jugador = gestorJugador.crearJugador(nombreJugador,new Stack<>(),gestorCarton.crearCarton(4));
+        cartonJugador = jugador.getCarton();
+        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        inicializarTemporizador(partida.getTiempoPorTurnoSegundos());
         ruleta = gestorRuleta.construirRuleta();
         dibujarNumerosRuleta();
         List<PowerUp> ofertaTienda = gestorTienda.generarOfertaAleatoria();
@@ -86,11 +104,19 @@ public class VentanaJuegoController {
             return false;
         }
 
+        if (apuestaInicial.getMonto() > jugador.getSaldoPuntos()) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Saldo insuficiente",
+                    "No tienes suficientes puntos para realizar esta apuesta.");
+            return false;
+        }
+
         if (!gestorApuesta.hacerApuesta(apuestaInicial)) {
             mostrarAlerta(Alert.AlertType.ERROR, "Apuesta inválida",
                     "No se pudo registrar la apuesta inicial.");
             return false;
         }
+        jugador.setSaldoPuntos(jugador.getSaldoPuntos() - apuestaInicial.getMonto());
+        actualizarSaldoJugador();
 
         IndicadorTurnoUI indicadorTurno = new IndicadorTurnoUI(
                 nombreJugador, nombreBotRival, obtenerTextoDificultad(dificultadBot)
@@ -98,8 +124,47 @@ public class VentanaJuegoController {
         indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
 
         String nombreComodin = (comodinInicial != null) ? comodinInicial.getNombre() : "Comodín aleatorio listo";
-        mostrarResumenConIndicador(indicadorTurno, apuestaInicial, nombreComodin);
+        girarRuleta(resultado -> {
+            if (esApuestaGanadora(apuestaInicial, resultado)) {
+                int premio = gestorApuesta.calcularPagoDinamico();
+                jugador.setSaldoPuntos(jugador.getSaldoPuntos() + premio);
+            }
+            actualizarSaldoJugador();
+            mostrarResumenConIndicador(indicadorTurno, apuestaInicial, nombreComodin, () -> {
+                if (primeraVez) {
+                    String instruccion = "¡Es tu momento de jugar! Después de realizar tu apuesta y el primer giro, comienza tu turno. Tendrás 1 minuto para realizar tus acciones.\n" +
+                            "\n" +
+                            "¿Qué debes saber?\n" +
+                            "Tiempo límite: Dispones de 1 minuto para completar tu turno. El temporizador comenzará una vez aceptes estas instrucciones.\n" +
+                            "Fallos: Si se agota el tiempo antes de completar tu turno, recibirás un fallo. ¡Ten cuidado! Al acumular 4 fallos, perderás la partida.\n" +
+                            "Acciones disponibles: Durante tu turno podrás realizar las acciones permitidas por el juego para avanzar y alcanzar tu objetivo.\n" +
+                            "Comodines: Al inicio recibirás un comodin de manera aleatoria.\n" +
+                            "Pulsa «Aceptar» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
+                            "\n" +
+                            "¡Mucha suerte!";
+                    mostrarModalInstruccion("¡Comienza tu turno!", instruccion, this::iniciarTemporizador);
+                } else {
+                    iniciarTemporizador();
+                }
+            });
+        });
         return true;
+    }
+    private boolean esApuestaGanadora(Apuesta apuesta, CasillaRuleta resultado) {
+        if (apuesta == null || resultado == null || apuesta.getTipo() == null
+                || !gestorApuesta.validarApuesta(apuesta)) {
+            return false;
+        }
+
+        String prediccion = apuesta.getPrediccion().trim().toUpperCase();
+        return switch (apuesta.getTipo()) {
+            case COLOR -> resultado.getColor() != null
+                    && prediccion.equals(resultado.getColor().name());
+            case NUMERO -> Integer.parseInt(prediccion) == resultado.getValor();
+            case PAROIMPAR -> resultado.getValor() != 0
+                    && ((resultado.getValor() % 2 == 0 && prediccion.equals("PAR"))
+                    || (resultado.getValor() % 2 != 0 && prediccion.equals("IMPAR")));
+        };
     }
     public void mostrarPrimeraVez() {
         ButtonType si = new ButtonType("Sí", ButtonBar.ButtonData.YES);
@@ -136,7 +201,11 @@ public class VentanaJuegoController {
         };
     }
 
-    private void mostrarResumenConIndicador(IndicadorTurnoUI indicadorTurno, Apuesta apuestaInicial, String nombreComodin) {
+    private void mostrarResumenConIndicador(
+            IndicadorTurnoUI indicadorTurno,
+            Apuesta apuestaInicial,
+            String nombreComodin,
+            Runnable alCerrar) {
         Stage dialog = new Stage();
         dialog.initOwner(juegoRoot.getScene().getWindow());
         dialog.initModality(Modality.APPLICATION_MODAL);
@@ -173,7 +242,8 @@ public class VentanaJuegoController {
         Scene scene = new Scene(box);
         scene.setFill(Color.TRANSPARENT);
         dialog.setScene(scene);
-        dialog.showAndWait();
+        dialog.setOnHidden(event -> alCerrar.run());
+        dialog.show();
     }
 
     private Apuesta solicitarApuestaInicialJavaFX() {
@@ -405,6 +475,10 @@ public class VentanaJuegoController {
         alert.showAndWait();
     }
     public void mostrarModalInstruccion(String titulo, String instruccion) {
+        mostrarModalInstruccion(titulo, instruccion, null);
+    }
+
+    private void mostrarModalInstruccion(String titulo, String instruccion, Runnable alCerrar) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initStyle(StageStyle.TRANSPARENT);
@@ -454,9 +528,14 @@ public class VentanaJuegoController {
         Scene scene = new Scene(contenido);
         scene.setFill(Color.TRANSPARENT);
         dialog.setScene(scene);
-        dialog.showAndWait();
+        if (alCerrar == null) {
+            dialog.showAndWait();
+        } else {
+            dialog.setOnHidden(event -> alCerrar.run());
+            dialog.show();
+        }
     }
-    private CasillaRuleta girarRuleta(){
+    private void girarRuleta(Consumer<CasillaRuleta> alFinalizar){
         giroConfirmado = false;
         confirmarGiroButton.setText("Confirmar giro");
         confirmarGiroButton.setDisable(true);
@@ -467,9 +546,80 @@ public class VentanaJuegoController {
         rotateTransition.setFromAngle(ruletaGroup.getRotate());
         rotateTransition.setToAngle(ruletaGroup.getRotate() + 720);
         rotateTransition.setCycleCount(2);
-        rotateTransition.setOnFinished(event -> confirmarGiroButton.setDisable(false));
+        CasillaRuleta resultado = gestorRuleta.girarRuleta();
+        rotateTransition.setOnFinished(event -> {
+            Platform.runLater(() -> {
+                confirmarGiroButton.setDisable(false);
+                mostrarModalResultadoRuleta(resultado, () -> alFinalizar.accept(resultado));
+            });
+        });
         rotateTransition.play();
-        return gestorRuleta.girarRuleta();
+    }
+    private void mostrarModalResultadoRuleta(CasillaRuleta resultado, Runnable alCerrar) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initStyle(StageStyle.TRANSPARENT);
+
+        if (juegoRoot.getScene() != null && juegoRoot.getScene().getWindow() != null) {
+            dialog.initOwner(juegoRoot.getScene().getWindow());
+        } else {
+            Window.getWindows().stream()
+                    .filter(Window::isShowing)
+                    .findFirst()
+                    .ifPresent(dialog::initOwner);
+        }
+
+        String colorFondo = obtenerColorResultado(resultado.getColor());
+        String colorTexto = resultado.getColor() == datos.Color.AMARILLO ? "#191919" : "#FFFFFF";
+
+        Label titulo = new Label("Resultado de la ruleta");
+        titulo.setStyle("-fx-font-family: 'Pixelify Sans'; -fx-font-size: 20px; " +
+                "-fx-font-weight: bold; -fx-text-fill: #191919;");
+
+        Label numero = new Label(Integer.toString(resultado.getValor()));
+        numero.setAlignment(Pos.CENTER);
+        numero.setPrefSize(82, 82);
+        numero.setStyle("-fx-font-family: 'Pixelify Sans'; -fx-font-size: 38px; " +
+                "-fx-font-weight: bold; -fx-text-fill: " + colorTexto + "; " +
+                "-fx-background-color: " + colorFondo + "; -fx-background-radius: 41;");
+
+        Label color = new Label(resultado.getColor() == null
+                ? "Sin color" : resultado.getColor().name());
+        color.setStyle("-fx-font-family: 'Pixelify Sans'; -fx-font-size: 15px; " +
+                "-fx-text-fill: #555555;");
+
+        Button aceptar = new Button("Continuar");
+        aceptar.setPrefSize(130, 40);
+        aceptar.setStyle("-fx-font-family: 'Pixelify Sans'; -fx-font-size: 15px; " +
+                "-fx-font-weight: bold; -fx-text-fill: white; -fx-background-color: #191919; " +
+                "-fx-background-radius: 10; -fx-cursor: hand;");
+        aceptar.setOnAction(event -> dialog.close());
+        dialog.setOnHidden(event -> alCerrar.run());
+
+        VBox contenido = new VBox(12, titulo, numero, color, aceptar);
+        contenido.setAlignment(Pos.CENTER);
+        contenido.setPadding(new Insets(24, 30, 24, 30));
+        contenido.setStyle("-fx-background-color: #FFFFFF; -fx-background-radius: 20; " +
+                "-fx-border-color: #191919; -fx-border-width: 2; -fx-border-radius: 20; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 16, 0, 0, 5);");
+
+        Scene scene = new Scene(contenido);
+        scene.setFill(Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.show();
+    }
+
+    private String obtenerColorResultado(datos.Color color) {
+        if (color == null) {
+            return "#191919";
+        }
+        return switch (color) {
+            case ROJO -> "#9F4242";
+            case NEGRO -> "#191919";
+            case VERDE -> "#1D5822";
+            case AMARILLO -> "#FBC02D";
+            case AZUL -> "#1E88E5";
+        };
     }
 
     @FXML
@@ -507,6 +657,89 @@ public class VentanaJuegoController {
             etiqueta.setLayoutX(x - 19);
             etiqueta.setLayoutY(y - 19);
             ruletaGroup.getChildren().add(etiqueta);
+        }
+    }
+    private void iniciarTemporizador(){
+        if (temporizador == null) {
+            throw new IllegalStateException("El temporizador no ha sido inicializado.");
+        }
+        temporizadorActivo = true;
+        temporizador.play();
+    }
+
+    private void inicializarTemporizador(int segundos) {
+        if (segundos <= 0) {
+            throw new IllegalArgumentException("La duración del turno debe ser mayor que cero.");
+        }
+        if (temporizador != null) {
+            temporizador.stop();
+        }
+        totalSegundos = segundos;
+        temporizador = new Timeline(
+                new KeyFrame(Duration.seconds(1), event -> actualizarTemporizador()));
+        temporizador.setCycleCount(Timeline.INDEFINITE);
+        reiniciarTemporizador();
+    }
+
+    private void reiniciarTemporizador(){
+        segundosRestantes = totalSegundos;
+        temporizadorLabel.setText(darFormatoTiempo(segundosRestantes));
+    }
+    private void actualizarTemporizador(){
+        if(segundosRestantes > 0){
+            segundosRestantes--;
+            actualizarUI();
+        }
+        if (segundosRestantes == 0) {
+            pausarTemporizador();
+
+        }
+    }
+    private void pausarTemporizador(){
+        temporizadorActivo=false;
+        if (temporizador != null) {
+            temporizador.pause();
+        }
+
+    }
+    private void actualizarUI(){
+        temporizadorLabel.setText(darFormatoTiempo(segundosRestantes));
+    }
+    private String darFormatoTiempo(int segundos){
+        int minutos = segundos / 60;
+        int segundosT = segundos %60;
+        return String.format("%02d:%02d",minutos,segundosT);
+    }
+    public void actualizarSaldoJugador() {
+        saldoJugadorLabel.setText("Saldo: " + jugador.getSaldoPuntos() + " puntos");
+    }
+    private void ponerFilasCarton() {
+        Map<datos.Color, HBox> vistas = new EnumMap<>(datos.Color.class);
+        vistas.put(datos.Color.ROJO, filaRoja);
+        vistas.put(datos.Color.AMARILLO, filaAmarilla);
+        vistas.put(datos.Color.VERDE, filaVerde);
+        vistas.put(datos.Color.AZUL, filaAzul);
+
+        for (FilaColor fila : cartonJugador.getFilas()) {
+            HBox vista = vistas.get(fila.getColor());
+            CasillaCarton[] casillas = fila.getCasillas();
+
+            if (vista == null || vista.getChildren().size() != casillas.length) {
+                throw new IllegalStateException("La fila del FXML no coincide con el cartón.");
+            }
+
+            for (int i = 0; i < casillas.length - 1; i++) {
+                Button boton = (Button) vista.getChildren().get(i);
+                CasillaCarton casilla = casillas[i];
+                boton.setText(Integer.toString(casilla.getValor()));
+
+                boton.setOnAction(event -> {
+                    if (resultadoActual != null
+                            && gestorCarton.validarMarcacion(fila, casilla, resultadoActual)) {
+                        boton.setDisable(true);
+                    }
+                });
+            }
         }
     }
 

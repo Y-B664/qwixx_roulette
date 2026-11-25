@@ -253,3 +253,11 @@
     -fx-min-height: 45px;
     -fx-pref-height: 45px;
 }
+.balance-label {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #191919;
+    -fx-background-color: #FBC02D;
+    -fx-background-radius: 12;
+    -fx-padding: 10 18;
+}
