@@ -234,19 +234,20 @@ public class VentanaJuegoController {
         }
         jugador = gestorJugador.crearJugador(nombreJugador,new Stack<>(),gestorCarton.crearCarton(4));
         cartonJugador = jugador.getCarton();
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2, jugador);
         inicializarTemporizador(partida.getTiempoPorTurnoSegundos());
-
-        Partida partidaActual = gestorPartida.iniciarPartida(2,jugador);
-        if (partidaActual != null && partidaActual.getJugadores() != null && partidaActual.getJugadores().length > 0) {
-            Jugador jugadorPrincipal = partidaActual.getJugadores()[0];
+        if (partida != null
+                && partida.getJugadores() != null
+                && partida.getJugadores().length > 0) {
+            Jugador jugadorPrincipal = partida.getJugadores()[0];
             if (jugadorPrincipal != null) {
                 jugadorPrincipal.setNombreUsuario(
-                        (nombreJugador != null && !nombreJugador.isBlank()) ? nombreJugador.trim() : "Jugador"
+                        (nombreJugador != null && !nombreJugador.isBlank())
+                                ? nombreJugador.trim()
+                                : "Jugador"
                 );
             }
         }
-
         this.botRival = gestorPartida.configurarBot(dificultadBot);
         if (this.botRival != null) {
             this.botRival.setSaldoPuntos(5);
@@ -304,6 +305,7 @@ public class VentanaJuegoController {
 
         String nombreComodin = (comodinInicial != null) ? comodinInicial.getNombre() : "Comodín aleatorio listo";
         girarRuleta(resultado -> {
+            this.resultadoActual = resultado;
             if (esApuestaGanadora(apuestaInicial, resultado)) {
                 int premio = gestorApuesta.calcularPagoDinamico();
                 jugador.setSaldoPuntos(jugador.getSaldoPuntos() + premio);
@@ -354,9 +356,20 @@ public class VentanaJuegoController {
                 gestorPartida.agregarBot(botRival);
             }
         }
+
         if (botRival == null) {
             return;
         }
+
+        pausarTemporizador();
+
+        if (confirmarGiroButton != null) {
+            confirmarGiroButton.setDisable(true);
+        }
+
+        gestorJugador.confirmarGiro(jugador);
+        gestorPartida.getPartida().setTurnoActual(botRival);
+
         if (indicadorTurno != null) {
             indicadorTurno.setTurno(false, nombreJugador, nombreBotRival);
         }
@@ -367,8 +380,16 @@ public class VentanaJuegoController {
             dificilBot.decidirUsoPowerUps();
         }
 
-        CasillaRuleta resultadoActual = (ruleta != null) ? ruleta.getResultadoActual() : null;
-        botRival.ejecutarTurno(resultadoActual, gestorCarton, gestorRuleta.isComodinCeroActivo());
+        CasillaRuleta resultadoActual =
+                (ruleta != null) ? ruleta.getResultadoActual() : null;
+
+        botRival.ejecutarTurno(
+                resultadoActual,
+                gestorCarton,
+                gestorRuleta.isComodinCeroActivo()
+        );
+
+        gestorJugador.confirmarGiro(botRival);
 
         if (gestorPartida.evaluarCondicionFin()) {
             gestorPartida.finalizarPartida();
@@ -376,10 +397,25 @@ public class VentanaJuegoController {
             return;
         }
 
+        gestorPartida.verificarConfirmacionGiro();
+
+        gestorPartida.getPartida().setTurnoActual(jugador);
+
+        jugador.setGiroConfirmado(false);
+        botRival.setGiroConfirmado(false);
+        gestorPartida.getPartida().setGiroConfirmado(false);
+
         this.numeroTurno++;
+
         if (indicadorTurno != null) {
             indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
         }
+
+        girarRuleta(resultado -> {
+            this.resultadoActual = resultado;
+            reiniciarTemporizador();
+            iniciarTemporizador();
+        });
     }
 
     private void finalizarYAbrirResultados() {
@@ -888,17 +924,19 @@ public class VentanaJuegoController {
             case AZUL -> "#1E88E5";
         };
     }
-
     @FXML
     private void confirmarGiro() {
+        if (giroConfirmado) {
+            return;
+        }
         giroConfirmado = true;
+        gestorJugador.confirmarGiro(jugador);
         if (confirmarGiroButton != null) {
             confirmarGiroButton.setText("Giro confirmado");
             confirmarGiroButton.setDisable(true);
         }
         ejecutarTurnoBotRival();
     }
-
     private void dibujarNumerosRuleta() {
         if (ruleta == null || ruletaGroup == null) {
             return;
@@ -959,17 +997,39 @@ public class VentanaJuegoController {
         segundosRestantes = totalSegundos;
         temporizadorLabel.setText(darFormatoTiempo(segundosRestantes));
     }
-    private void actualizarTemporizador(){
-        if(segundosRestantes > 0){
+
+    private void actualizarTemporizador() {
+        if (segundosRestantes > 0) {
             segundosRestantes--;
             actualizarUI();
         }
         if (segundosRestantes == 0) {
             pausarTemporizador();
-            if(!jugador.isGiroConfirmado()){
+            if (!jugador.isGiroConfirmado()) {
                 gestorCarton.marcarFallo(jugador);
+                actualizarFallos();
+                if (jugador.getCarton().getFallos()
+                        >= jugador.getCarton().getCasillasFallos()) {
+                    if (gestorPartida.getPartida() != null) {
+                        gestorPartida.getPartida()
+                                .setEstado(EstadoPartida.FINALIZADA);
+                    }
+                    mostrarAlerta(
+                            Alert.AlertType.INFORMATION,
+                            "Partida perdida",
+                            "Has acumulado "
+                                    + jugador.getCarton().getFallos()
+                                    + " fallos."
+                    );
+                    finalizarYAbrirResultados();
+                    return;
+                }
             }
-
+            giroConfirmado = false;
+            if (confirmarGiroButton != null) {
+                confirmarGiroButton.setDisable(true);
+            }
+            ejecutarTurnoBotRival();
         }
     }
     private void pausarTemporizador(){
@@ -1016,6 +1076,15 @@ public class VentanaJuegoController {
                         boton.setDisable(true);
                     }
                 });
+            }
+        }
+    }
+    private void actualizarFallos() {
+        int fallos = jugador.getCarton().getFallos();
+        ToggleButton[] indicadores = {fallo1, fallo2, fallo3, fallo4};
+        for (int i = 0; i < indicadores.length; i++) {
+            if (indicadores[i] != null) {
+                indicadores[i].setSelected(i < fallos);
             }
         }
     }
