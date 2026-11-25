@@ -33,7 +33,8 @@ public class Bot extends Jugador {
         int valorObjetivo = (resultadoRuleta != null) ? resultadoRuleta.getValor() : 0;
 
         for (FilaColor fila : filasOrdenadas) {
-            if (fila == null || fila.isEstaBloqueadaGlobal()) {
+            if (fila == null || fila.isEstaBloqueadaGlobal()
+                    || !filaPermiteColor(fila, resultadoRuleta != null ? resultadoRuleta.getColor() : null)) {
                 continue;
             }
             CasillaCarton[] casillas = fila.getCasillas();
@@ -56,13 +57,42 @@ public class Bot extends Jugador {
                 CasillaCarton elegida = elegirCasilla(candidatos, fila);
                 elegida.setMarcada(true);
                 gestorCarton.bloquearIzquierda(elegida.getValor(), fila);
-                gestorCarton.validarCierreCandado(fila);
+                if (cumpleCondicionesCierre(fila)) {
+                    gestorCarton.validarCierreCandado(fila);
+                }
                 return true;
             }
         }
 
         gestorCarton.marcarFallo(this);
         return false;
+    }
+
+    private boolean cumpleCondicionesCierre(FilaColor fila) {
+        CasillaCarton[] casillas = fila.getCasillas();
+        if (casillas == null || fila.getColor() == null) {
+            return false;
+        }
+
+        int valorFinal;
+        if (fila.getColor() == Color.ROJO || fila.getColor() == Color.AMARILLO) {
+            valorFinal = 12;
+        } else if (fila.getColor() == Color.VERDE || fila.getColor() == Color.AZUL) {
+            valorFinal = 2;
+        } else {
+            return false;
+        }
+
+        int numerosMarcados = 0;
+        boolean casillaFinalMarcada = false;
+        for (int i = 0; i < casillas.length - 1; i++) {
+            CasillaCarton casilla = casillas[i];
+            if (casilla != null && casilla.isMarcada()) {
+                numerosMarcados++;
+                casillaFinalMarcada |= casilla.getValor() == valorFinal;
+            }
+        }
+        return numerosMarcados >= 5 && casillaFinalMarcada;
     }
 
     protected List<FilaColor> obtenerOrdenFilas(List<FilaColor> filas) {
