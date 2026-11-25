@@ -270,6 +270,17 @@ public class VentanaJuegoController {
             throw new IllegalStateException("La partida debe configurarse antes de iniciarse.");
         }
         if (primeraVez) {
+            String dinamica = """
+            DINÁMICA DEL JUEGO
+            Comienzas con 5 puntos y debes hacer una apuesta antes del primer giro. Si aciertas, ganas el premio indicado; también recibes un comodín aleatorio.
+            En cada turno, la ruleta indica un número y un color. Marca ese número en una fila permitida, avanzando de izquierda a derecha: negro corresponde a amarillo o verde, y rojo a rojo o azul. Si sale 0 verde, puedes marcar cualquier casilla libre.
+            Tienes 1 minuto por turno. Si terminas sin marcar o se acaba el tiempo, recibes un fallo y pierdes 5 puntos. Puedes comprar y usar comodines durante la partida.
+
+            ¿CÓMO GANAR?
+            Marca al menos 5 casillas de una fila para cerrar su candado; al puntuar, el candado cuenta como una marca adicional. Evita los fallos y cierra filas para sumar puntos.
+            La partida termina al cerrarse 4 filas entre ambos jugadores, cuando alguien llega a 4 fallos o cuando un jugador alcanza 5 puntos de deuda. Tu objetivo es terminar con más puntos que el bot; si tú llegas a 4 fallos, pierdes.
+            """;
+            mostrarModalInstruccion("Dinámica del juego y cómo ganar", dinamica);
             String instruccion = "¡Bienvenido al juego!\n" +
                     "Al comenzar, recibirás 5 puntos para participar. Antes de iniciar la partida, deberás realizar una apuesta inicial utilizando los puntos disponibles.\n" +
                     "Una vez realizada tu apuesta, estarás listo para continuar con el juego.";
@@ -797,29 +808,31 @@ public class VentanaJuegoController {
             botRival.ejecutarTurno(resultadoParaBot, gestorCarton, gestorRuleta.isComodinCeroActivo());
             gestorJugador.confirmarGiro(botRival);
 
-            if (finalizarPartidaSiCorresponde()) {
-                return;
-            }
+            Platform.runLater(() -> {
+                if (finalizarPartidaSiCorresponde()) {
+                    return;
+                }
 
-            gestorPartida.verificarConfirmacionGiro();
-            if (gestorPartida.getPartida() != null) {
-                gestorPartida.getPartida().setTurnoActual(jugador);
-                gestorPartida.getPartida().setGiroConfirmado(false);
-            }
-            jugador.setGiroConfirmado(false);
-            botRival.setGiroConfirmado(false);
-            this.numeroTurno++;
+                gestorPartida.verificarConfirmacionGiro();
+                if (gestorPartida.getPartida() != null) {
+                    gestorPartida.getPartida().setTurnoActual(jugador);
+                    gestorPartida.getPartida().setGiroConfirmado(false);
+                }
+                jugador.setGiroConfirmado(false);
+                botRival.setGiroConfirmado(false);
+                this.numeroTurno++;
 
-            if (indicadorTurno != null) {
-                indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
-            }
+                if (indicadorTurno != null) {
+                    indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
+                }
 
-            girarRuleta(resultado -> {
-                this.resultadoActual = resultado;
-                this.casillaMarcadaEnTurno = false;
-                actualizarCasillasDisponibles(resultado);
-                reiniciarTemporizador();
-                iniciarTemporizador();
+                girarRuleta(resultado -> {
+                    this.resultadoActual = resultado;
+                    this.casillaMarcadaEnTurno = false;
+                    actualizarCasillasDisponibles(resultado);
+                    reiniciarTemporizador();
+                    iniciarTemporizador();
+                });
             });
         });
         pausaBot.play();
@@ -844,6 +857,41 @@ public class VentanaJuegoController {
         int saldoJugador = (jugadorPrincipal != null) ? jugadorPrincipal.getSaldoPuntos() : 0;
         int puntosFinales = Math.max(0, puntosCarton) + saldoJugador;
 
+        String tituloResultado;
+        String detalleResultado;
+        if (botRival == null) {
+            tituloResultado = "Partida finalizada";
+            detalleResultado = "Puntaje final de " + nombreFinal + ": " + puntosFinales + " puntos.";
+        } else {
+            int puntosBot = Math.max(0, calcularPuntajeTotalCarton(botRival.getCarton()))
+                    + botRival.getSaldoPuntos();
+            boolean jugadorPerdioPorFallos = cartonJugador != null
+                    && cartonJugador.getFallos() >= MAX_FALLOS;
+            boolean botPerdioPorFallos = botRival.getCarton() != null
+                    && botRival.getCarton().getFallos() >= MAX_FALLOS;
+
+            if (jugadorPerdioPorFallos) {
+                tituloResultado = "Ganó " + nombreBotRival;
+                detalleResultado = "Llegaste a " + MAX_FALLOS + " fallos.\n"
+                        + "Tu puntaje: " + puntosFinales + " puntos.\n"
+                        + nombreBotRival + ": " + puntosBot + " puntos.";
+            } else if (botPerdioPorFallos) {
+                tituloResultado = "¡Ganaste!";
+                detalleResultado = "Ganaste porque " + nombreBotRival + " llegó a " + MAX_FALLOS + " fallos.";
+            } else if (puntosFinales > puntosBot) {
+                tituloResultado = "¡Ganaste!";
+                detalleResultado = "Tu puntaje: " + puntosFinales + " puntos.\n"
+                        + nombreBotRival + ": " + puntosBot + " puntos.";
+            } else if (puntosFinales < puntosBot) {
+                tituloResultado = "Ganó " + nombreBotRival;
+                detalleResultado = "Tu puntaje: " + puntosFinales + " puntos.\n"
+                        + nombreBotRival + ": " + puntosBot + " puntos.";
+            } else {
+                tituloResultado = "¡Empate!";
+                detalleResultado = "Ambos terminaron con " + puntosFinales + " puntos.";
+            }
+        }
+
         try {
             if (daoRegistro != null && nombreFinal != null && !nombreFinal.isBlank()) {
                 Registro registroFinal = new Registro(nombreFinal.trim(), puntosFinales);
@@ -857,6 +905,11 @@ public class VentanaJuegoController {
             System.out.println("Aviso al guardar resultado: " + ex.getMessage());
         }
 
+        mostrarModalInstruccion(tituloResultado, detalleResultado,
+                () -> abrirVentanaResultados(nombreFinal, puntosFinales));
+    }
+
+    private void abrirVentanaResultados(String nombreFinal, int puntosFinales) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/VentanaResultados.fxml"));
             Parent root = loader.load();
@@ -1605,20 +1658,24 @@ public class VentanaJuegoController {
     }
 
     private int calcularPuntajeTotalCarton() {
-        if (cartonJugador == null || cartonJugador.getFilas() == null) {
-            return 0;
-        }
-        int sumaColores = 0;
-        for (FilaColor fila : cartonJugador.getFilas()) {
-            if (fila != null) {
-                sumaColores += calcularPuntosFila(fila);
-            }
-        }
-        int total = sumaColores - (cartonJugador.getFallos() * PUNTOS_POR_FALLO);
+        int total = calcularPuntajeTotalCarton(cartonJugador);
         if (doblePuntajeActivo && total > 0) {
             total *= 2;
         }
         return total;
+    }
+
+    private int calcularPuntajeTotalCarton(Carton carton) {
+        if (carton == null || carton.getFilas() == null) {
+            return 0;
+        }
+        int sumaColores = 0;
+        for (FilaColor fila : carton.getFilas()) {
+            if (fila != null) {
+                sumaColores += calcularPuntosFila(fila);
+            }
+        }
+        return sumaColores - (carton.getFallos() * PUNTOS_POR_FALLO);
     }
 
     private boolean validarYMarcarCasilla(
@@ -1784,17 +1841,6 @@ public class VentanaJuegoController {
         }
         partida.setEstado(EstadoPartida.FINALIZADA);
         pausarTemporizador();
-
-        if (fallosJugadorCompletados) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Partida perdida",
-                    "Has acumulado " + MAX_FALLOS + " fallos. ¡Has perdido la partida!");
-        } else if (fallosBotCompletados) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "¡Ganaste la partida!",
-                    nombreBotRival + " acumuló " + MAX_FALLOS + " fallos.");
-        } else if (deudaSuperada) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Partida finalizada",
-                    "Se alcanzó el umbral de deuda =) de " + UMBRAL_DEUDA + " puntos.");
-        }
 
         finalizarYAbrirResultados();
         return true;
