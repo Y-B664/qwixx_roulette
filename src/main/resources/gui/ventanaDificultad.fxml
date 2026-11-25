@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 
-<AnchorPane fx:id="dificultadRoot" minHeight="1241.0" minWidth="1400.0" prefHeight="1241.0" prefWidth="1652.0" styleClass="difficulty-screen" stylesheets="@ventanaDificultad.css" xmlns="http://javafx.com/javafx/27.0.1.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VentanaDificultadController">
+<AnchorPane fx:id="dificultadRoot" minHeight="1241.0" minWidth="1400.0" prefHeight="1241.0" prefWidth="1652.0" styleClass="difficulty-screen" stylesheets="@ventanaDificultad.css" xmlns="http://javafx.com/javafx/25.0.1.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VentanaDificultadController">
 
     <children>
 

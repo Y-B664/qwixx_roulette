@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+
+<AnchorPane fx:id="tiendaRoot" minHeight="1241.0" minWidth="1652.0" prefHeight="1241.0" prefWidth="1652.0" styleClass="cards-screen" stylesheets="@cartas.css" xmlns="http://javafx.com/javafx/27.0.1.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VentanaDificultadController">
+
+    <!-- TÍTULO Y SALDO -->
+    <Label layoutX="471.0" layoutY="64.0" prefHeight="76.0" styleClass="screen-title" text="Tienda de cartas" AnchorPane.leftAnchor="471.0" AnchorPane.topAnchor="64.0" />
+
+    <AnchorPane layoutX="952.0" layoutY="62.0" prefHeight="1.0" prefWidth="272.0" styleClass="wallet" AnchorPane.rightAnchor="428.0" AnchorPane.topAnchor="62.0">
+
+        <Label layoutX="84.0" layoutY="20.0" prefHeight="30.0" styleClass="wallet-caption" text="TU SALDO" />
+
+        <Label fx:id="saldoLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="84.0" layoutY="46.0" prefHeight="46.0" prefWidth="105.0" styleClass="wallet-value" text="320" textAlignment="CENTER" />
+    </AnchorPane>
+
+    <!-- PESTAÑAS -->
+    <AnchorPane layoutX="574.0" layoutY="196.0" prefHeight="64.0" prefWidth="520.0" styleClass="tabs-panel" AnchorPane.leftAnchor="574.0" AnchorPane.topAnchor="196.0">
+   
+        <Button fx:id="misCartasTabButton" layoutX="4.0" layoutY="4.0" prefHeight="56.0" prefWidth="254.0" styleClass="tab-button" text="Mis cartas" />
+
+        <Button fx:id="tiendaTabButton" layoutX="262.0" layoutY="4.0" prefHeight="56.0" prefWidth="254.0" styleClass="tab-button, active-tab" text="Tienda" />
+    </AnchorPane>
+
+    <Label alignment="CENTER" contentDisplay="CENTER" layoutX="610.0" layoutY="260.0" prefHeight="64.0" prefWidth="460.0" styleClass="screen-description" text="Hay # cartas disponibles" textAlignment="CENTER" AnchorPane.rightAnchor="582.0" AnchorPane.topAnchor="260.0" />
+
+    <!-- PRODUCTOS -->
+    <GridPane hgap="34.0" layoutX="96.0" layoutY="358.0" vgap="32.0" AnchorPane.bottomAnchor="235.0" AnchorPane.leftAnchor="96.0" AnchorPane.rightAnchor="96.0" AnchorPane.topAnchor="358.0">
+
+        <columnConstraints>
+            <ColumnConstraints percentWidth="33.333333" />
+            <ColumnConstraints percentWidth="33.333333" />
+            <ColumnConstraints percentWidth="33.333334" />
+        </columnConstraints>
+
+        <rowConstraints>
+            <RowConstraints percentHeight="50.0" />
+            <RowConstraints percentHeight="50.0" />
+        </rowConstraints>
+
+        <!-- GIRO EXTRA -->
+        <AnchorPane styleClass="power-card, card-red" GridPane.columnIndex="0" GridPane.rowIndex="0">
+
+            <StackPane prefHeight="72.0" prefWidth="72.0" styleClass="icon-tile, tint-red" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="28.0">
+                <fx:include source="iconos/giro.fxml" />
+            </StackPane>
+
+            <Label prefHeight="44.0" styleClass="card-title" text="Giro extra" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="28.0" />
+
+            <Label styleClass="card-category" text="AZAR" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="74.0" />
+
+            <Label alignment="TOP_LEFT" prefHeight="72.0" styleClass="card-description" text="Vuelve a girar la ruleta una vez." wrapText="true" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="116.0" />
+
+            <Region prefHeight="1.0" styleClass="card-divider" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="204.0" />
+
+            <Label fx:id="precioGiroLabel" styleClass="price" text="50 monedas" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="221.0" />
+
+            <Button fx:id="comprarGiroButton" styleClass="card-action, dark-button" text="Comprar" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
+        </AnchorPane>
+
+        <!-- TIEMPO EXTRA -->
+        <AnchorPane styleClass="power-card, card-blue" GridPane.columnIndex="1" GridPane.rowIndex="0">
+
+            <StackPane prefHeight="72.0" prefWidth="72.0" styleClass="icon-tile, tint-blue" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="28.0">
+                <fx:include source="iconos/tiempo.fxml" />
+            </StackPane>
+
+            <Label prefHeight="44.0" styleClass="card-title" text="Tiempo extra" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="28.0" />
+
+            <Label styleClass="card-category" text="TIEMPO" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="74.0" />
+
+            <Label alignment="TOP_LEFT" prefHeight="72.0" styleClass="card-description" text="Añade 15 segundos a tu turno." wrapText="true" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="116.0" />
+
+            <Region prefHeight="1.0" styleClass="card-divider" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="204.0" />
+
+            <Label fx:id="precioTiempoLabel" styleClass="price" text="60 monedas" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="221.0" />
+
+            <Button fx:id="comprarTiempoButton" styleClass="card-action, dark-button" text="Comprar" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
+        </AnchorPane>
+
+        <!-- ESCUDO -->
+        <AnchorPane styleClass="power-card, card-green" GridPane.columnIndex="2" GridPane.rowIndex="0">
+
+            <StackPane prefHeight="72.0" prefWidth="72.0" styleClass="icon-tile, tint-green" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="28.0">
+                <fx:include source="iconos/escudo.fxml" />
+            </StackPane>
+
+            <Label prefHeight="44.0" styleClass="card-title" text="Escudo" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="28.0" />
+
+            <Label styleClass="card-category" text="DEFENSA" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="74.0" />
+
+            <Label alignment="TOP_LEFT" prefHeight="72.0" styleClass="card-description" text="Evita el próximo fallo que recibas." wrapText="true" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="116.0" />
+
+            <Region prefHeight="1.0" styleClass="card-divider" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="204.0" />
+
+            <Label fx:id="precioEscudoLabel" styleClass="price" text="80 monedas" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="221.0" />
+
+            <Button fx:id="comprarEscudoButton" styleClass="card-action, dark-button" text="Comprar" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
+        </AnchorPane>
+
+        <!-- BORRADOR -->
+        <AnchorPane styleClass="power-card, card-red" GridPane.columnIndex="0" GridPane.rowIndex="1">
+
+            <StackPane prefHeight="72.0" prefWidth="72.0" styleClass="icon-tile, tint-red" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="28.0">
+                <fx:include source="iconos/borrador.fxml" />
+            </StackPane>
+
+            <Label prefHeight="44.0" styleClass="card-title" text="Borrador" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="28.0" />
+
+            <Label styleClass="card-category" text="CONTROL" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="74.0" />
+
+            <Label alignment="TOP_LEFT" prefHeight="72.0" styleClass="card-description" text="Elimina un fallo de tu marcador." wrapText="true" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="116.0" />
+
+            <Region prefHeight="1.0" styleClass="card-divider" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="204.0" />
+
+            <Label fx:id="precioBorradorLabel" styleClass="price" text="90 monedas" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="221.0" />
+
+            <Button fx:id="comprarBorradorButton" styleClass="card-action, dark-button" text="Comprar" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
+        </AnchorPane>
+
+        <!-- COMODÍN -->
+        <AnchorPane styleClass="power-card, card-gold" GridPane.columnIndex="1" GridPane.rowIndex="1">
+
+            <StackPane prefHeight="72.0" prefWidth="72.0" styleClass="icon-tile, tint-gold" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="28.0">
+                <fx:include source="iconos/comodin.fxml" />
+            </StackPane>
+
+            <Label prefHeight="44.0" styleClass="card-title" text="Comodín" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="28.0" />
+
+            <Label styleClass="card-category" text="ELECCIÓN" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="74.0" />
+
+            <Label alignment="TOP_LEFT" prefHeight="72.0" styleClass="card-description" text="Marca una casilla del color que elijas." wrapText="true" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="116.0" />
+
+            <Region prefHeight="1.0" styleClass="card-divider" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="204.0" />
+
+            <Label fx:id="precioComodinLabel" styleClass="price" text="120 monedas" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="221.0" />
+
+            <Button fx:id="comprarComodinButton" styleClass="card-action, dark-button" text="Comprar" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
+        </AnchorPane>
+
+        <!-- DOBLE PUNTAJE -->
+        <AnchorPane styleClass="power-card, card-gold" GridPane.columnIndex="2" GridPane.rowIndex="1">
+
+            <StackPane prefHeight="72.0" prefWidth="72.0" styleClass="icon-tile, tint-gold" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="28.0">
+                <fx:include source="iconos/puntos.fxml" />
+            </StackPane>
+
+            <Label prefHeight="44.0" styleClass="card-title" text="Doble puntaje" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="28.0" />
+
+            <Label styleClass="card-category" text="PUNTOS" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="74.0" />
+
+            <Label alignment="TOP_LEFT" prefHeight="72.0" styleClass="card-description" text="Duplica los puntos de tu próxima marca." wrapText="true" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="116.0" />
+
+            <Region prefHeight="1.0" styleClass="card-divider" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="204.0" />
+
+            <Label fx:id="precioPuntosLabel" styleClass="price" text="150 monedas" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="221.0" />
+
+            <Button fx:id="comprarPuntosButton" styleClass="card-action, dark-button" text="Comprar" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
+        </AnchorPane>
+
+    </GridPane>
+
+    <!-- ACCIONES INFERIORES -->
+    <AnchorPane prefHeight="60.0" AnchorPane.bottomAnchor="41.0" AnchorPane.leftAnchor="96.0" AnchorPane.rightAnchor="96.0">
+
+        <Button fx:id="volverJuegoButton" prefHeight="60.0" prefWidth="340.0" styleClass="footer-button, outline-button" text="Volver al juego" AnchorPane.leftAnchor="0.0" />
+
+        <Button fx:id="verMisCartasButton" prefHeight="60.0" prefWidth="320.0" styleClass="footer-button, dark-button" text="Ver mis cartas" AnchorPane.rightAnchor="0.0" />
+    </AnchorPane>
+
+</AnchorPane>

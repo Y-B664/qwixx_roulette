@@ -1,0 +1,238 @@
+.cards-screen {
+    -fx-background-color: white;
+    -fx-font-family: "Pixelify Sans";
+}
+
+.brand {
+    -fx-font-size: 76px;
+    -fx-text-fill: #191919;
+}
+
+.header-divider,
+.card-divider {
+    -fx-background-color: #D6D9DB;
+}
+
+.screen-title {
+    -fx-font-size: 64px;
+    -fx-text-fill: #191919;
+}
+
+.screen-description {
+    -fx-font-size: 28px;
+    -fx-text-fill: #616366;
+}
+
+/* PALETA */
+
+.color-chip {
+    -fx-min-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-max-width: 40px;
+    -fx-min-height: 40px;
+    -fx-pref-height: 40px;
+    -fx-max-height: 40px;
+    -fx-background-radius: 8;
+}
+
+.chip-red    { -fx-background-color: #E53935; }
+.chip-yellow { -fx-background-color: #FBC02D; }
+.chip-green  { -fx-background-color: #2E7D32; }
+.chip-blue   { -fx-background-color: #1E88E5; }
+
+/* SALDO */
+
+.wallet {
+    -fx-background-color: #191919;
+    -fx-background-radius: 20;
+}
+
+.wallet-caption {
+    -fx-font-size: 22px;
+    -fx-text-fill: #CCCCCC;
+}
+
+.wallet-value {
+    -fx-font-size: 42px;
+    -fx-text-fill: white;
+}
+
+.wallet-unit {
+    -fx-font-size: 24px;
+    -fx-text-fill: white;
+}
+
+/* PESTAÑAS */
+
+.tabs-panel {
+    -fx-background-color: #F6F7F9;
+    -fx-background-radius: 18;
+    -fx-border-color: #D6D9DB;
+    -fx-border-width: 2;
+    -fx-border-radius: 18;
+}
+
+.tab-button {
+    -fx-font-size: 32px;
+    -fx-text-fill: #616366;
+    -fx-background-color: transparent;
+    -fx-background-radius: 14;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.active-tab {
+    -fx-background-color: #191919;
+    -fx-text-fill: white;
+}
+
+/* CARTAS */
+
+.power-card {
+    -fx-background-color: white;
+    -fx-background-radius: 24;
+    -fx-border-color: #D6D9DB;
+    -fx-border-width: 2;
+    -fx-border-radius: 24;
+}
+
+.card-red {
+    -fx-effect: dropshadow(
+            gaussian, rgba(229, 57, 53, 0.15), 18, 0, 0, 4
+    );
+}
+
+.card-blue {
+    -fx-effect: dropshadow(
+            gaussian, rgba(30, 136, 229, 0.15), 18, 0, 0, 4
+    );
+}
+
+.card-green {
+    -fx-effect: dropshadow(
+            gaussian, rgba(46, 125, 50, 0.15), 18, 0, 0, 4
+    );
+}
+
+.card-gold {
+    -fx-effect: dropshadow(
+            gaussian, rgba(251, 192, 45, 0.18), 18, 0, 0, 4
+    );
+}
+
+.icon-tile {
+    -fx-background-radius: 16;
+}
+
+.tint-red {
+    -fx-background-color: rgba(229, 57, 53, 0.10);
+}
+
+.tint-blue {
+    -fx-background-color: rgba(30, 136, 229, 0.10);
+}
+
+.tint-green {
+    -fx-background-color: rgba(46, 125, 50, 0.10);
+}
+
+.tint-gold {
+    -fx-background-color: rgba(251, 192, 45, 0.10);
+}
+
+.card-title {
+    -fx-font-size: 36px;
+    -fx-text-fill: #191919;
+}
+
+.card-category {
+    -fx-font-size: 22px;
+    -fx-text-fill: #616366;
+}
+
+.card-description {
+    -fx-font-size: 28px;
+    -fx-text-fill: #616366;
+}
+
+.card-divider {
+    -fx-background-color: #E8EBED;
+}
+
+/* CANTIDADES Y PRECIOS */
+
+.quantity {
+    -fx-pref-width: 72px;
+    -fx-pref-height: 56px;
+    -fx-font-size: 32px;
+    -fx-text-fill: #191919;
+    -fx-alignment: center;
+    -fx-background-radius: 12;
+}
+
+.stock-caption {
+    -fx-pref-width: 92px;
+    -fx-pref-height: 56px;
+    -fx-font-size: 24px;
+    -fx-text-fill: #616366;
+    -fx-alignment: center-left;
+}
+
+.price {
+    -fx-pref-width: 200px;
+    -fx-pref-height: 56px;
+    -fx-font-size: 32px;
+    -fx-text-fill: #191919;
+    -fx-alignment: center-left;
+}
+
+/* BOTONES */
+
+.card-action {
+    -fx-pref-width: 188px;
+    -fx-pref-height: 56px;
+    -fx-font-size: 28px;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.footer-button {
+    -fx-font-size: 30px;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.outline-button {
+    -fx-background-color: white;
+    -fx-text-fill: #191919;
+    -fx-border-color: #191919;
+    -fx-border-width: 2;
+}
+
+.dark-button {
+    -fx-background-color: #191919;
+    -fx-text-fill: white;
+}
+
+.outline-button:hover {
+    -fx-background-color: #F3F3F3;
+}
+
+.dark-button:hover {
+    -fx-background-color: #303030;
+}
+
+.card-action:focused,
+.footer-button:focused {
+    -fx-border-color: #1E88E5;
+    -fx-border-width: 2;
+}
+
+.footer-note {
+    -fx-font-size: 26px;
+    -fx-text-fill: #616366;
+}

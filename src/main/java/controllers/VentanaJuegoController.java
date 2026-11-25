@@ -62,6 +62,10 @@ public class VentanaJuegoController {
     @FXML private Label puntosAzulesLabel;
     @FXML private Label penalizacionLabel;
     @FXML private Label puntuacionTotalLabel;
+    @FXML private ToggleButton fallo1;
+    @FXML private ToggleButton fallo2;
+    @FXML private ToggleButton fallo3;
+    @FXML private ToggleButton fallo4;
 
     private final GenericDAO<Registro> daoRegistro;
     private final GestorRuleta gestorRuleta = new GestorRuleta();
@@ -962,6 +966,9 @@ public class VentanaJuegoController {
         }
         if (segundosRestantes == 0) {
             pausarTemporizador();
+            if(!jugador.isGiroConfirmado()){
+                gestorCarton.marcarFallo(jugador);
+            }
 
         }
     }
