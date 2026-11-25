@@ -85,7 +85,16 @@
         <Button fx:id="instruccionesButton" mnemonicParsing="false" prefHeight="76.0" prefWidth="452.0" styleClass="outline-button" text="Ver instrucciones" AnchorPane.leftAnchor="53.0" AnchorPane.topAnchor="65.0" />
 
         <Button fx:id="finalizarButton" mnemonicParsing="false" prefHeight="76.0" prefWidth="475.0" styleClass="dark-button" text="Finalizar partida" AnchorPane.rightAnchor="32.0" AnchorPane.topAnchor="53.0" />
-
+        <Button fx:id="confirmarGiroButton"
+                text="Confirmar giro"
+                mnemonicParsing="false"
+                prefWidth="300.0"
+                prefHeight="64.0"
+                styleClass="dark-button"
+                disable="true"
+                onAction="#confirmarGiro"
+                AnchorPane.topAnchor="630.0"
+                AnchorPane.leftAnchor="728.0"/>
         <!-- TEMPORIZADOR -->
         <AnchorPane fx:id="temporizadorPane" prefHeight="220.0" prefWidth="340.0" styleClass="timer-panel" AnchorPane.leftAnchor="136.0" AnchorPane.topAnchor="751.0">
 

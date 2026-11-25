@@ -5,6 +5,8 @@ import datos.*;
 import gestion.*;
 import gui.IndicadorTurnoUI;
 import impOperacionesBD.ImpOperacionesRegistro;
+import javafx.animation.RotateTransition;
+import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -20,6 +22,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
+import javafx.util.Duration;
 
 import java.util.List;
 import java.util.Stack;
@@ -28,6 +31,7 @@ public class VentanaJuegoController {
 
     @FXML private AnchorPane juegoRoot;
     @FXML private Group ruletaGroup;
+    @FXML private Button confirmarGiroButton;
     private final ImpOperacionesRegistro impOperacionesRegistro = new ImpOperacionesRegistro();
     private final GestorRuleta gestorRuleta = new GestorRuleta();
     private final GestorApuesta gestorApuesta = new GestorApuesta();
@@ -67,6 +71,8 @@ public class VentanaJuegoController {
                     "Una vez realizada tu apuesta, estarás listo para continuar con el juego.";
             mostrarModalInstruccion("Puntos iniciales",instruccion);
         }
+        girarRuleta();
+
 
         Jugador jugador = gestorJugador.crearJugador(nombreJugador,new Stack(),gestorCarton.crearCarton(4));
         gestorPartida.iniciarPartida(2,jugador);
@@ -450,8 +456,27 @@ public class VentanaJuegoController {
         dialog.setScene(scene);
         dialog.showAndWait();
     }
-    private void girarRuleta(){
+    private CasillaRuleta girarRuleta(){
+        giroConfirmado = false;
+        confirmarGiroButton.setText("Confirmar giro");
+        confirmarGiroButton.setDisable(true);
 
+        RotateTransition rotateTransition = new RotateTransition();
+        rotateTransition.setDuration(Duration.millis(3000));
+        rotateTransition.setNode(ruletaGroup);
+        rotateTransition.setFromAngle(ruletaGroup.getRotate());
+        rotateTransition.setToAngle(ruletaGroup.getRotate() + 720);
+        rotateTransition.setCycleCount(2);
+        rotateTransition.setOnFinished(event -> confirmarGiroButton.setDisable(false));
+        rotateTransition.play();
+        return gestorRuleta.girarRuleta();
+    }
+
+    @FXML
+    private void confirmarGiro() {
+        giroConfirmado = true;
+        confirmarGiroButton.setText("Giro confirmado");
+        confirmarGiroButton.setDisable(true);
     }
     private void dibujarNumerosRuleta(){
         List<CasillaRuleta> casillas = ruleta.getCasillas();
