@@ -25,9 +25,11 @@ public class GestorRuleta {
         casillas.add(new CasillaRuleta(0, Color.VERDE));
 
         // Números del 1 al 36 (impares ROJO, pares NEGRO)
-        for (int i = 1; i <= 36; i++) {
-            Color color = (i % 2 != 0) ? Color.ROJO : Color.NEGRO;
-            casillas.add(new CasillaRuleta(i, color));
+        for (int vuelta = 0; vuelta < 3; vuelta++) {
+            for (int i = 1; i <= 12; i++) {
+                Color color = (i % 2 != 0) ? Color.ROJO : Color.NEGRO;
+                casillas.add(new CasillaRuleta(i, color));
+            }
         }
 
         this.ruleta.setCasillas(casillas);
