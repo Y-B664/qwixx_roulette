@@ -13,8 +13,12 @@ import impOperacionesBD.ImpOperacionesRegistro;
 import operacionesBD.GenericDAO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,7 +28,6 @@ class GestorPartidaTest {
     GestorCarton gestorCarton;
     GestorTemporizador gestorTemporizador;
     GenericDAO<Registro> impOperacionesRegistro;
-    Jugador jugador;
     @BeforeEach
     public void setUp(){
         impOperacionesRegistro= new ImpOperacionesRegistro();
@@ -32,17 +35,16 @@ class GestorPartidaTest {
         gestorCarton = new GestorCarton();
         gestorTemporizador = new GestorTemporizador();
         gestorPartida = new GestorPartida(gestorJugador, gestorCarton,gestorTemporizador);
-        jugador = gestorJugador.crearJugador("Mario", new Stack<>(), gestorCarton.crearCarton(4));
 
     }
     @Test
     public void iniciarPartidaOk()
     {
-        assertNotNull(gestorPartida.iniciarPartida(2,jugador));
+        assertNotNull(gestorPartida.iniciarPartida(2));
     }
     @Test
     public void iniciarPartidaPuntosInicialesOk()
-    {  Partida partida =  gestorPartida.iniciarPartida(2,jugador);
+    {  Partida partida =  gestorPartida.iniciarPartida(2);
         Jugador jugador = partida.getJugadores()[0];
         assertEquals(5,jugador.getSaldoPuntos());
     }
@@ -54,6 +56,7 @@ class GestorPartidaTest {
     }
     @Test
     public void controlarTemporizadorOk() throws InterruptedException {
+        boolean[] ejecutado = {false};
         AtomicBoolean finalizo= new AtomicBoolean(false);
         Runnable accion =  () -> {finalizo.set(true);};
         gestorPartida.controlarTemporizador(3, true, accion);
@@ -71,7 +74,7 @@ class GestorPartidaTest {
 
     @Test
     public void finalizarPartidaOk() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
@@ -88,7 +91,7 @@ class GestorPartidaTest {
     }
     @Test
     public void finalizarPartidaCancelada() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
@@ -106,13 +109,13 @@ class GestorPartidaTest {
     }
     @Test
     public void cancelarPartidaOk() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         gestorPartida.cancelarPartida();
         assertEquals(EstadoPartida.CANCELADA,partida.getEstado());
     }
     @Test
     public void cancelarPartidaFinalizada() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         partida.setEstado(EstadoPartida.FINALIZADA);
         gestorPartida.cancelarPartida();
         assertEquals(EstadoPartida.FINALIZADA,partida.getEstado());
@@ -148,7 +151,7 @@ class GestorPartidaTest {
     }
     @Test
     public void agregarBotOk() {
-        gestorPartida.iniciarPartida(2,jugador);
+        gestorPartida.iniciarPartida(2);
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         gestorPartida.agregarBot(bot);
         int size = gestorPartida.partida.getJugadores().length;
@@ -156,7 +159,7 @@ class GestorPartidaTest {
     }
     @Test
     public void calcularPuntajeFinalOk() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
@@ -177,7 +180,7 @@ class GestorPartidaTest {
     }
     @Test
     public void calcularPuntajeFinalSinFilasCompletadas() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
         gestorPartida.agregarBot(bot);
@@ -188,7 +191,7 @@ class GestorPartidaTest {
     }
     @Test
     public void calcularPuntajeFinalSinCandadoTachado() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
         gestorPartida.agregarBot(bot);
@@ -201,7 +204,7 @@ class GestorPartidaTest {
     }
     @Test
     public void calcularPuntajeFinalSinBloqueoGlobal() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
         gestorPartida.agregarBot(bot);
@@ -214,7 +217,7 @@ class GestorPartidaTest {
     }
     @Test
     public void evaluarCondicionFinOk() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
@@ -230,7 +233,7 @@ class GestorPartidaTest {
     }
     @Test
     public void evaluarCondicionFinCon2FilasCompletas() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
@@ -246,7 +249,7 @@ class GestorPartidaTest {
     }
     @Test
     public void evaluarCondicionFinCandadosSinTachar() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
@@ -261,7 +264,7 @@ class GestorPartidaTest {
     }
     @Test
     public void evaluarCondicionFinSinEstadoGlobal() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(5);
@@ -275,7 +278,7 @@ class GestorPartidaTest {
     }}
     @Test
     public void mostrarGanadorOk() {
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Bot bot = gestorPartida.configurarBot(Dificultad.DIFICIL);
         bot.setSaldoPuntos(10);
         gestorPartida.agregarBot(bot);
@@ -297,13 +300,13 @@ class GestorPartidaTest {
     }
     @Test
     public void mostrarGanadorJugadoresNulos() {
-        Partida partida = new Partida(0,false,null,60,2,jugador);
+        Partida partida = new Partida(0,false,null,60,2);
         gestorPartida.setPartida(partida);
         assertNull(gestorPartida.mostrarGanador());
     }
     @Test
     public void mostrarGanadorPrimerJugadorNulo() {
-        Partida partida = new Partida(0,false,null,60,2,jugador);
+        Partida partida = new Partida(0,false,null,60,2);
         gestorPartida.setPartida(partida);
         assertNull(gestorPartida.mostrarGanador());
     }
@@ -320,7 +323,7 @@ class GestorPartidaTest {
     @Test
     public void mostrarGanador3() {
         String timestamp = String.valueOf(System.nanoTime());
-        Partida partida = gestorPartida.iniciarPartida(3,jugador);
+        Partida partida = gestorPartida.iniciarPartida(3);
         Jugador[] jugadores = partida.getJugadores();
         Carton cartonJugador3 = gestorCarton.crearCarton(4);
         jugadores[1] = gestorJugador.crearJugador("jugador"+timestamp,new Stack(),cartonJugador3);
@@ -349,7 +352,7 @@ class GestorPartidaTest {
     @Test
     public void verificarConfirmacionGiroOK() {
         String timestamp = String.valueOf(System.nanoTime());
-        Partida partida = gestorPartida.iniciarPartida(3,jugador);
+        Partida partida = gestorPartida.iniciarPartida(3);
         Jugador[] jugadores = partida.getJugadores();
         Carton cartonJugador3 = gestorCarton.crearCarton(4);
         jugadores[1] = gestorJugador.crearJugador("jugador"+timestamp,new Stack(),cartonJugador3);
@@ -365,7 +368,7 @@ class GestorPartidaTest {
     @Test
     public void verificarConfirmacionGiro1JugadorSinConfirmar() {
         String timestamp = String.valueOf(System.nanoTime());
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        Partida partida = gestorPartida.iniciarPartida(2);
         Jugador[] jugadores = partida.getJugadores();
         Carton cartonJugador3 = gestorCarton.crearCarton(4);
         jugadores[1] = gestorJugador.crearJugador("jugador"+timestamp,new Stack(),cartonJugador3);

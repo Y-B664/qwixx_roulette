@@ -49,7 +49,6 @@ public class VentanaResultadosController {
 
     @FXML
     public void initialize() {
-        this.ventanaPrincipalController = new VentanaPrincipalController();
         filasRankingVBox.getChildren().clear();
         List<Registro> registros =  new ImpOperacionesRegistro().obtenerTodos();
         if(registros == null){
@@ -115,7 +114,7 @@ public class VentanaResultadosController {
     }
     private void miPuntuacion(){
         String nombre =  ventanaPrincipalController.getJugadorEnSesion();
-        if (nombre == null || nombre.isBlank()){
+        if (nombre.isBlank()){
             miNombreLabel.setText("N/D");
             miPosicionLabel.setText("N/D");
             misPuntosLabel.setText("N/D");
