@@ -251,24 +251,22 @@ public class VentanaJuegoController {
                     "Una vez realizada tu apuesta, estarás listo para continuar con el juego.";
             mostrarModalInstruccion("Puntos iniciales", instruccion);
         }
-        jugador = gestorJugador.crearJugador(nombreJugador, new Stack<>(), gestorCarton.crearCarton(4));
+        jugador = gestorJugador.crearJugador(nombreJugador,new Stack<>(),gestorCarton.crearCarton(4));
         cartonJugador = jugador.getCarton();
         ponerFilasCarton();
+        Partida partida = gestorPartida.iniciarPartida(2,jugador);
+        inicializarTemporizador(partida.getTiempoPorTurnoSegundos());
 
-        Partida partida = gestorPartida.iniciarPartida(2, jugador);
-        inicializarTemporizador(partida != null ? partida.getTiempoPorTurnoSegundos() : 60);
-        if (partida != null
-                && partida.getJugadores() != null
-                && partida.getJugadores().length > 0) {
-            Jugador jugadorPrincipal = partida.getJugadores()[0];
+        Partida partidaActual = gestorPartida.iniciarPartida(2,jugador);
+        if (partidaActual != null && partidaActual.getJugadores() != null && partidaActual.getJugadores().length > 0) {
+            Jugador jugadorPrincipal = partidaActual.getJugadores()[0];
             if (jugadorPrincipal != null) {
                 jugadorPrincipal.setNombreUsuario(
-                        (nombreJugador != null && !nombreJugador.isBlank())
-                                ? nombreJugador.trim()
-                                : "Jugador"
+                        (nombreJugador != null && !nombreJugador.isBlank()) ? nombreJugador.trim() : "Jugador"
                 );
             }
         }
+
         this.botRival = gestorPartida.configurarBot(dificultadBot);
         if (this.botRival != null) {
             this.botRival.setSaldoPuntos(5);
@@ -279,15 +277,14 @@ public class VentanaJuegoController {
         dibujarNumerosRuleta();
 
         List<PowerUp> ofertaTienda = gestorTienda.generarOfertaAleatoria();
-        PowerUp comodinInicial = ofertaTienda.isEmpty() ? null : ofertaTienda.get(0).clonarDisponible();
-        if (comodinInicial != null) {
-            gestorStack.agregarPowerUp(jugador.getMazoPowerUps(), comodinInicial);
-            if (this.botRival != null && this.botRival.getMazoPowerUps() != null) {
-                gestorStack.agregarPowerUp(this.botRival.getMazoPowerUps(), comodinInicial.clonarDisponible());
+        PowerUp comodinInicial = ofertaTienda.isEmpty() ? null : ofertaTienda.get(0);
+        if (comodinInicial != null && this.botRival != null) {
+            @SuppressWarnings("unchecked")
+            Stack<Object> mazoBot = this.botRival.getMazoPowerUps();
+            if (mazoBot != null) {
+                mazoBot.push(comodinInicial);
             }
         }
-        gestorTienda.generarOfertaAleatoria();
-        actualizarBotonPowerUps();
 
         Apuesta apuestaInicial = solicitarApuestaInicialJavaFX();
         if (apuestaInicial == null) {
@@ -344,7 +341,7 @@ public class VentanaJuegoController {
                             "Fallos: Si se agota el tiempo antes de completar tu turno, recibirás un fallo. ¡Ten cuidado! Al acumular 4 fallos, perderás la partida.\n" +
                             "Acciones disponibles: Durante tu turno podrás realizar las acciones permitidas por el juego para avanzar y alcanzar tu objetivo.\n" +
                             "Comodines: Al inicio recibirás un comodin de manera aleatoria.\n" +
-                            "Pulsa «Entendido» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
+                            "Pulsa «Aceptar» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
                             "\n" +
                             "¡Mucha suerte!";
                     mostrarModalInstruccion("¡Comienza tu turno!", instruccion, this::iniciarTemporizador);
@@ -1432,8 +1429,7 @@ public class VentanaJuegoController {
         }
         casilla.setMarcada(true);
         return true;
-    }
-    private void intentarCerrarFila(FilaColor fila) {
+    }private void intentarCerrarFila(FilaColor fila) {
         if (fila == null || fila.isEstaBloqueadaGlobal()) {
             return;
         }
@@ -1447,6 +1443,24 @@ public class VentanaJuegoController {
         if (gestorCarton.validarCierreCandado(fila)) {
             actualizarCasillasDisponibles(resultadoActual);
             finalizarPartidaSiCorresponde();
+        }
+    }
+    private void actualizarEstilosFila(FilaColor fila, HBox vista, CasillaCarton[] casillas) {
+        if (fila == null || vista == null || casillas == null) {
+            return;
+        }
+        for (int i = 0; i < casillas.length - 1; i++) {
+            Button boton = (Button) vista.getChildren().get(i);
+            actualizarEstiloCasilla(boton, casillas[i]);
+        }
+    }
+
+    private void actualizarEstiloCasilla(Button boton, CasillaCarton casilla) {
+        boton.getStyleClass().removeAll("casilla-marcada", "casilla-bloqueada");
+        if (casilla.isMarcada()) {
+            boton.getStyleClass().add("casilla-marcada");
+        } else if (casilla.isBloqueada()) {
+            boton.getStyleClass().add("casilla-bloqueada");
         }
     }
 
@@ -1485,6 +1499,7 @@ public class VentanaJuegoController {
             for (FilaColor fila : cartonJugador.getFilas()) {
                 HBox vista = vistas.get(fila.getColor());
                 if (vista != null) {
+                    actualizarEstilosFila(fila, vista, fila.getCasillas());
                     vista.setDisable(true);
                 }
             }
@@ -1499,6 +1514,7 @@ public class VentanaJuegoController {
                 throw new IllegalStateException("La fila del FXML no coincide con el cartón.");
             }
 
+            actualizarEstilosFila(fila, vista, casillas);
             boolean colorPermitido = esCeroVerde
                     || (resultado.getColor() == datos.Color.NEGRO
                     && (fila.getColor() == datos.Color.AMARILLO || fila.getColor() == datos.Color.VERDE))

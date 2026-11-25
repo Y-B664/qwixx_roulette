@@ -23,6 +23,7 @@ public class VentanaPrincipalController {
     @FXML private Button instruccionesButton;
     @FXML private Button rankingButton;
     private String jugadorEnSesion;
+    ImpOperacionesRegistro impOperacionesRegistro = new ImpOperacionesRegistro();
 
     @FXML
     public void initialize() {
@@ -70,15 +71,7 @@ public class VentanaPrincipalController {
     private boolean existeUsuarioEnRanking(String nombre) {
         try {
             ImpOperacionesRegistro dao = new ImpOperacionesRegistro();
-            List<Registro> registros = dao.obtenerTodos();
-            if (registros != null) {
-                for (Registro r : registros) {
-                    if (r != null && r.getNombre() != null &&
-                            r.getNombre().trim().equalsIgnoreCase(nombre)) {
-                        return true;
-                    }
-                }
-            }
+            return dao.existePorNombre(nombre);
         } catch (Exception ex) {
             System.out.println("Aviso al validar usuario en BD: " + ex.getMessage());
         }

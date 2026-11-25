@@ -261,3 +261,11 @@
     -fx-background-radius: 12;
     -fx-padding: 10 18;
 }
+.score-cell.casilla-marcada {
+    -fx-background-color: #2E7D32;
+    -fx-text-fill: white;
+}
+.score-cell.casilla-bloqueada {
+    -fx-background-color: #1E88E5;
+    -fx-text-fill: white;
+}
