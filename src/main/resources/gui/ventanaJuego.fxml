@@ -1,375 +1,239 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Arc?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.SVGPath?>
 
-<?import javafx.scene.shape.Arc?>
-<?import javafx.scene.Group?>
-<?import javafx.scene.effect.DropShadow?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:id="juegoRoot"
-            prefWidth="1756.0"
-            prefHeight="1811.0"
-            minWidth="1756.0"
-            minHeight="1811.0"
-            fx:controller="controllers.VentanaJuegoController"
-            styleClass="game-screen"
-            stylesheets="@ventanaJuego.css">
+<AnchorPane fx:id="juegoRoot" minHeight="1811.0" minWidth="1756.0" prefHeight="1811.0" prefWidth="1756.0" styleClass="game-screen" stylesheets="@ventanaJuego.css" xmlns="http://javafx.com/javafx/27.0.1.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VentanaJuegoController">
 
 
     <children>
 
-        <Group fx:id="ruletaGroup"
-               layoutX="878.0"
-               layoutY="320.0"
-               mouseTransparent="true">
+        <Group fx:id="ruletaGroup" layoutX="884.0" layoutY="482.0" mouseTransparent="true">
 
             <effect>
-                <DropShadow radius="16.0"
-                            offsetY="5.0"
-                            color="#00000080"/>
+                <DropShadow color="#00000080" offsetY="5.0" radius="16.0" />
             </effect>
 
 
             <children>
 
                 <!-- Borde y base negra -->
-                <Circle radius="283.687" fill="#D9D9D9"/>
-                <Circle radius="271.530" fill="#191919"/>
+                <Circle fill="#D9D9D9" radius="283.687" />
+                <Circle fill="#191919" radius="271.530" />
 
                 <!-- Sectores rojos -->
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="1.918" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="1.918" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="21.482" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="21.482" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="41.247" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="41.247" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="60.850" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="60.850" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="80.242" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="80.242" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="99.850" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="99.850" type="ROUND" />
 
                 <!-- Sector verde -->
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="109.638" length="9.72"
-                     type="ROUND" fill="#1D5822"/>
+                <Arc fill="#1D5822" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="109.638" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="129.000" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="129.000" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="138.456" length="9.72"
-                     type="ROUND" fill="#191919"/>
+                <Arc fill="#191919" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="138.456" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="148.218" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="148.218" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="167.788" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="167.788" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-172.591" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-172.591" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-153.249" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-153.249" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-133.563" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-133.563" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-113.928" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-113.928" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-94.133" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-94.133" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-74.452" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-74.452" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-55.015" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-55.015" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-35.348" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-35.348" type="ROUND" />
 
-                <Arc radiusX="271.530" radiusY="271.530"
-                     startAngle="-16.198" length="9.72"
-                     type="ROUND" fill="#9F4242"/>
+                <Arc fill="#9F4242" length="9.72" radiusX="271.530" radiusY="271.530" startAngle="-16.198" type="ROUND" />
 
 
             </children>
         </Group>
 
         <!-- CONTROLES SUPERIORES -->
-        <Button fx:id="instruccionesButton"
-                text="Ver instrucciones"
-                mnemonicParsing="false"
-                prefWidth="452.0"
-                prefHeight="76.0"
-                styleClass="outline-button"
-                AnchorPane.topAnchor="65.0"
-                AnchorPane.leftAnchor="53.0"/>
+        <Button fx:id="instruccionesButton" mnemonicParsing="false" prefHeight="76.0" prefWidth="452.0" styleClass="outline-button" text="Ver instrucciones" AnchorPane.leftAnchor="53.0" AnchorPane.topAnchor="65.0" />
 
-        <Button fx:id="finalizarButton"
-                text="Finalizar partida"
+        <Button fx:id="finalizarButton" mnemonicParsing="false" prefHeight="76.0" prefWidth="475.0" styleClass="dark-button" text="Finalizar partida" AnchorPane.rightAnchor="32.0" AnchorPane.topAnchor="53.0" />
+        <Button fx:id="confirmarGiroButton"
+                text="Confirmar giro"
                 mnemonicParsing="false"
-                prefWidth="475.0"
-                prefHeight="76.0"
+                prefWidth="300.0"
+                prefHeight="64.0"
                 styleClass="dark-button"
-                AnchorPane.topAnchor="53.0"
-                AnchorPane.rightAnchor="32.0"/>
-
+                disable="true"
+                onAction="#confirmarGiro"
+                AnchorPane.topAnchor="630.0"
+                AnchorPane.leftAnchor="728.0"/>
         <!-- TEMPORIZADOR -->
-        <AnchorPane fx:id="temporizadorPane"
-                    prefWidth="340.0"
-                    prefHeight="220.0"
-                    styleClass="timer-panel"
-                    AnchorPane.topAnchor="751.0"
-                    AnchorPane.leftAnchor="136.0">
+        <AnchorPane fx:id="temporizadorPane" prefHeight="220.0" prefWidth="340.0" styleClass="timer-panel" AnchorPane.leftAnchor="136.0" AnchorPane.topAnchor="751.0">
 
             <children>
 
-                <Label text="TIEMPO RESTANTE"
-                       prefHeight="38.0"
-                       alignment="CENTER"
-                       styleClass="timer-caption"
-                       AnchorPane.topAnchor="26.0"
-                       AnchorPane.leftAnchor="24.0"
-                       AnchorPane.rightAnchor="24.0"/>
+                <Label alignment="CENTER" prefHeight="38.0" styleClass="timer-caption" text="TIEMPO RESTANTE" AnchorPane.leftAnchor="24.0" AnchorPane.rightAnchor="24.0" AnchorPane.topAnchor="26.0" />
 
-                <Label fx:id="temporizadorLabel"
-                       text="00:30"
-                       prefHeight="110.0"
-                       alignment="CENTER"
-                       styleClass="timer-value"
-                       AnchorPane.topAnchor="72.0"
-                       AnchorPane.leftAnchor="24.0"
-                       AnchorPane.rightAnchor="24.0"/>
+                <Label fx:id="temporizadorLabel" alignment="CENTER" prefHeight="110.0" styleClass="timer-value" text="00:30" AnchorPane.leftAnchor="24.0" AnchorPane.rightAnchor="24.0" AnchorPane.topAnchor="72.0" />
 
-                <Region layoutX="130.0"
-                        layoutY="194.0"
-                        prefWidth="80.0"
-                        prefHeight="6.0"
-                        styleClass="timer-accent"/>
+                <Region layoutX="130.0" layoutY="194.0" prefHeight="6.0" prefWidth="80.0" styleClass="timer-accent" />
 
             </children>
         </AnchorPane>
 
         <!-- TABLERO Y CONTROLES LATERALES -->
-        <AnchorPane fx:id="tableroPane"
-                    prefHeight="515.0"
-                    styleClass="board-panel"
-                    AnchorPane.leftAnchor="160.0"
-                    AnchorPane.rightAnchor="136.0"
-                    AnchorPane.bottomAnchor="292.0">
+        <AnchorPane fx:id="tableroPane" prefHeight="515.0" styleClass="board-panel" AnchorPane.bottomAnchor="292.0" AnchorPane.leftAnchor="160.0" AnchorPane.rightAnchor="136.0">
 
             <children>
 
                 <!-- CARTÓN -->
-                <VBox fx:id="cartonVBox"
-                      spacing="10.0"
-                      prefHeight="456.0"
-                      styleClass="score-sheet"
-                      AnchorPane.topAnchor="29.5"
-                      AnchorPane.leftAnchor="35.0"
-                      AnchorPane.rightAnchor="350.0">
+                <VBox fx:id="cartonVBox" prefHeight="456.0" spacing="10.0" styleClass="score-sheet" AnchorPane.leftAnchor="35.0" AnchorPane.rightAnchor="350.0" AnchorPane.topAnchor="29.5">
 
                     <padding>
-                        <Insets top="10.0" right="10.0"
-                                bottom="10.0" left="10.0"/>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>
 
                     <children>
 
                         <!-- FILA ROJA -->
-                        <HBox fx:id="filaRoja"
-                              spacing="10.0"
-                              alignment="CENTER_LEFT"
-                              styleClass="score-row, red-row">
+                        <HBox fx:id="filaRoja" alignment="CENTER_LEFT" spacing="10.0" styleClass="score-row, red-row">
 
                             <padding>
-                                <Insets top="10.0" right="10.0"
-                                        bottom="10.0" left="10.0"/>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
 
                             <children>
-                                <Button fx:id="rojo12" text="12" styleClass="score-cell"/>
-                                <Button fx:id="rojo11" text="11" styleClass="score-cell"/>
-                                <Button fx:id="rojo10" text="10" styleClass="score-cell"/>
-                                <Button fx:id="rojo9" text="9" styleClass="score-cell"/>
-                                <Button fx:id="rojo8" text="8" styleClass="score-cell"/>
-                                <Button fx:id="rojo7" text="7" styleClass="score-cell"/>
-                                <Button fx:id="rojo6" text="6" styleClass="score-cell"/>
-                                <Button fx:id="rojo5" text="5" styleClass="score-cell"/>
-                                <Button fx:id="rojo4" text="4" styleClass="score-cell"/>
-                                <Button fx:id="rojo3" text="3" styleClass="score-cell"/>
-                                <Button fx:id="rojo2" text="2" styleClass="score-cell"/>
-                                <Button fx:id="rojo1" text="1" styleClass="score-cell"/>
+                                <Button fx:id="rojo12" styleClass="score-cell" text="12" />
+                                <Button fx:id="rojo11" styleClass="score-cell" text="11" />
+                                <Button fx:id="rojo10" styleClass="score-cell" text="10" />
+                                <Button fx:id="rojo9" styleClass="score-cell" text="9" />
+                                <Button fx:id="rojo8" styleClass="score-cell" text="8" />
+                                <Button fx:id="rojo7" styleClass="score-cell" text="7" />
+                                <Button fx:id="rojo6" styleClass="score-cell" text="6" />
+                                <Button fx:id="rojo5" styleClass="score-cell" text="5" />
+                                <Button fx:id="rojo4" styleClass="score-cell" text="4" />
+                                <Button fx:id="rojo3" styleClass="score-cell" text="3" />
+                                <Button fx:id="rojo2" styleClass="score-cell" text="2" />
+                                <Button fx:id="rojo1" styleClass="score-cell" text="1" />
 
-                                <Button fx:id="bloqueoRojoButton"
-                                        accessibleText="Bloquear fila roja"
-                                        styleClass="score-cell, lock-cell">
+                                <Button fx:id="bloqueoRojoButton" accessibleText="Bloquear fila roja" styleClass="score-cell, lock-cell">
                                     <graphic>
-                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20"
-                                                 fill="TRANSPARENT"
-                                                 stroke="WHITE"
-                                                 strokeWidth="2.0"
-                                                 scaleX="1.8"
-                                                 scaleY="1.8"/>
+                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20" fill="TRANSPARENT" scaleX="1.8" scaleY="1.8" stroke="WHITE" strokeWidth="2.0" />
                                     </graphic>
                                 </Button>
                             </children>
                         </HBox>
 
                         <!-- FILA AMARILLA -->
-                        <HBox fx:id="filaAmarilla"
-                              spacing="10.0"
-                              alignment="CENTER_LEFT"
-                              styleClass="score-row, yellow-row">
+                        <HBox fx:id="filaAmarilla" alignment="CENTER_LEFT" spacing="10.0" styleClass="score-row, yellow-row">
 
                             <padding>
-                                <Insets top="10.0" right="10.0"
-                                        bottom="10.0" left="10.0"/>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
 
                             <children>
-                                <Button fx:id="amarillo12" text="12" styleClass="score-cell"/>
-                                <Button fx:id="amarillo11" text="11" styleClass="score-cell"/>
-                                <Button fx:id="amarillo10" text="10" styleClass="score-cell"/>
-                                <Button fx:id="amarillo9" text="9" styleClass="score-cell"/>
-                                <Button fx:id="amarillo8" text="8" styleClass="score-cell"/>
-                                <Button fx:id="amarillo7" text="7" styleClass="score-cell"/>
-                                <Button fx:id="amarillo6" text="6" styleClass="score-cell"/>
-                                <Button fx:id="amarillo5" text="5" styleClass="score-cell"/>
-                                <Button fx:id="amarillo4" text="4" styleClass="score-cell"/>
-                                <Button fx:id="amarillo3" text="3" styleClass="score-cell"/>
-                                <Button fx:id="amarillo2" text="2" styleClass="score-cell"/>
-                                <Button fx:id="amarillo1" text="1" styleClass="score-cell"/>
+                                <Button fx:id="amarillo12" styleClass="score-cell" text="12" />
+                                <Button fx:id="amarillo11" styleClass="score-cell" text="11" />
+                                <Button fx:id="amarillo10" styleClass="score-cell" text="10" />
+                                <Button fx:id="amarillo9" styleClass="score-cell" text="9" />
+                                <Button fx:id="amarillo8" styleClass="score-cell" text="8" />
+                                <Button fx:id="amarillo7" styleClass="score-cell" text="7" />
+                                <Button fx:id="amarillo6" styleClass="score-cell" text="6" />
+                                <Button fx:id="amarillo5" styleClass="score-cell" text="5" />
+                                <Button fx:id="amarillo4" styleClass="score-cell" text="4" />
+                                <Button fx:id="amarillo3" styleClass="score-cell" text="3" />
+                                <Button fx:id="amarillo2" styleClass="score-cell" text="2" />
+                                <Button fx:id="amarillo1" styleClass="score-cell" text="1" />
 
-                                <Button fx:id="bloqueoAmarilloButton"
-                                        accessibleText="Bloquear fila amarilla"
-                                        styleClass="score-cell, lock-cell">
+                                <Button fx:id="bloqueoAmarilloButton" accessibleText="Bloquear fila amarilla" styleClass="score-cell, lock-cell">
                                     <graphic>
-                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20"
-                                                 fill="TRANSPARENT"
-                                                 stroke="WHITE"
-                                                 strokeWidth="2.0"
-                                                 scaleX="1.8"
-                                                 scaleY="1.8"/>
+                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20" fill="TRANSPARENT" scaleX="1.8" scaleY="1.8" stroke="WHITE" strokeWidth="2.0" />
                                     </graphic>
                                 </Button>
                             </children>
                         </HBox>
 
                         <!-- FILA VERDE -->
-                        <HBox fx:id="filaVerde"
-                              spacing="10.0"
-                              alignment="CENTER_LEFT"
-                              styleClass="score-row, green-row">
+                        <HBox fx:id="filaVerde" alignment="CENTER_LEFT" spacing="10.0" styleClass="score-row, green-row">
 
                             <padding>
-                                <Insets top="10.0" right="10.0"
-                                        bottom="10.0" left="10.0"/>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
 
                             <children>
-                                <Button fx:id="verde1" text="1" styleClass="score-cell"/>
-                                <Button fx:id="verde2" text="2" styleClass="score-cell"/>
-                                <Button fx:id="verde3" text="3" styleClass="score-cell"/>
-                                <Button fx:id="verde4" text="4" styleClass="score-cell"/>
-                                <Button fx:id="verde5" text="5" styleClass="score-cell"/>
-                                <Button fx:id="verde6" text="6" styleClass="score-cell"/>
-                                <Button fx:id="verde7" text="7" styleClass="score-cell"/>
-                                <Button fx:id="verde8" text="8" styleClass="score-cell"/>
-                                <Button fx:id="verde9" text="9" styleClass="score-cell"/>
-                                <Button fx:id="verde10" text="10" styleClass="score-cell"/>
-                                <Button fx:id="verde11" text="11" styleClass="score-cell"/>
-                                <Button fx:id="verde12" text="12" styleClass="score-cell"/>
+                                <Button fx:id="verde1" styleClass="score-cell" text="1" />
+                                <Button fx:id="verde2" styleClass="score-cell" text="2" />
+                                <Button fx:id="verde3" styleClass="score-cell" text="3" />
+                                <Button fx:id="verde4" styleClass="score-cell" text="4" />
+                                <Button fx:id="verde5" styleClass="score-cell" text="5" />
+                                <Button fx:id="verde6" styleClass="score-cell" text="6" />
+                                <Button fx:id="verde7" styleClass="score-cell" text="7" />
+                                <Button fx:id="verde8" styleClass="score-cell" text="8" />
+                                <Button fx:id="verde9" styleClass="score-cell" text="9" />
+                                <Button fx:id="verde10" styleClass="score-cell" text="10" />
+                                <Button fx:id="verde11" styleClass="score-cell" text="11" />
+                                <Button fx:id="verde12" styleClass="score-cell" text="12" />
 
-                                <Button fx:id="bloqueoVerdeButton"
-                                        accessibleText="Bloquear fila verde"
-                                        styleClass="score-cell, lock-cell">
+                                <Button fx:id="bloqueoVerdeButton" accessibleText="Bloquear fila verde" styleClass="score-cell, lock-cell">
                                     <graphic>
-                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20"
-                                                 fill="TRANSPARENT"
-                                                 stroke="WHITE"
-                                                 strokeWidth="2.0"
-                                                 scaleX="1.8"
-                                                 scaleY="1.8"/>
+                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20" fill="TRANSPARENT" scaleX="1.8" scaleY="1.8" stroke="WHITE" strokeWidth="2.0" />
                                     </graphic>
                                 </Button>
                             </children>
                         </HBox>
 
                         <!-- FILA AZUL -->
-                        <HBox fx:id="filaAzul"
-                              spacing="10.0"
-                              alignment="CENTER_LEFT"
-                              styleClass="score-row, blue-row">
+                        <HBox fx:id="filaAzul" alignment="CENTER_LEFT" spacing="10.0" styleClass="score-row, blue-row">
 
                             <padding>
-                                <Insets top="10.0" right="10.0"
-                                        bottom="10.0" left="10.0"/>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
 
                             <children>
-                                <Button fx:id="azul1" text="1" styleClass="score-cell"/>
-                                <Button fx:id="azul2" text="2" styleClass="score-cell"/>
-                                <Button fx:id="azul3" text="3" styleClass="score-cell"/>
-                                <Button fx:id="azul4" text="4" styleClass="score-cell"/>
-                                <Button fx:id="azul5" text="5" styleClass="score-cell"/>
-                                <Button fx:id="azul6" text="6" styleClass="score-cell"/>
-                                <Button fx:id="azul7" text="7" styleClass="score-cell"/>
-                                <Button fx:id="azul8" text="8" styleClass="score-cell"/>
-                                <Button fx:id="azul9" text="9" styleClass="score-cell"/>
-                                <Button fx:id="azul10" text="10" styleClass="score-cell"/>
-                                <Button fx:id="azul11" text="11" styleClass="score-cell"/>
-                                <Button fx:id="azul12" text="12" styleClass="score-cell"/>
+                                <Button fx:id="azul1" styleClass="score-cell" text="1" />
+                                <Button fx:id="azul2" styleClass="score-cell" text="2" />
+                                <Button fx:id="azul3" styleClass="score-cell" text="3" />
+                                <Button fx:id="azul4" styleClass="score-cell" text="4" />
+                                <Button fx:id="azul5" styleClass="score-cell" text="5" />
+                                <Button fx:id="azul6" styleClass="score-cell" text="6" />
+                                <Button fx:id="azul7" styleClass="score-cell" text="7" />
+                                <Button fx:id="azul8" styleClass="score-cell" text="8" />
+                                <Button fx:id="azul9" styleClass="score-cell" text="9" />
+                                <Button fx:id="azul10" styleClass="score-cell" text="10" />
+                                <Button fx:id="azul11" styleClass="score-cell" text="11" />
+                                <Button fx:id="azul12" styleClass="score-cell" text="12" />
 
-                                <Button fx:id="bloqueoAzulButton"
-                                        accessibleText="Bloquear fila azul"
-                                        styleClass="score-cell, lock-cell">
+                                <Button fx:id="bloqueoAzulButton" accessibleText="Bloquear fila azul" styleClass="score-cell, lock-cell">
                                     <graphic>
-                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20"
-                                                 fill="TRANSPARENT"
-                                                 stroke="WHITE"
-                                                 strokeWidth="2.0"
-                                                 scaleX="1.8"
-                                                 scaleY="1.8"/>
+                                        <SVGPath content="M7 11 V7 A5 5 0 0 1 17 7 V11 M5 11 H19 V25 H5 Z M12 16 V20" fill="TRANSPARENT" scaleX="1.8" scaleY="1.8" stroke="WHITE" strokeWidth="2.0" />
                                     </graphic>
                                 </Button>
                             </children>
@@ -379,86 +243,49 @@
                 </VBox>
 
                 <!-- POWER-UPS, TIENDA Y FALLOS -->
-                <VBox fx:id="controlesLaterales"
-                      spacing="14.0"
-                      alignment="TOP_CENTER"
-                      prefWidth="305.0"
-                      prefHeight="456.0"
-                      AnchorPane.topAnchor="29.5"
-                      AnchorPane.rightAnchor="35.0">
+                <VBox fx:id="controlesLaterales" alignment="TOP_CENTER" prefHeight="456.0" prefWidth="305.0" spacing="14.0" AnchorPane.rightAnchor="35.0" AnchorPane.topAnchor="29.5">
 
                     <children>
 
-                        <Button fx:id="powerUpsButton"
-                                text="PowerUps"
-                                prefWidth="185.0"
-                                prefHeight="76.0"
-                                styleClass="powerups-button"/>
+                        <Button fx:id="powerUpsButton" prefHeight="90.0" prefWidth="251.0" styleClass="powerups-button" text="PowerUps" />
 
-                        <Button fx:id="tiendaButton"
-                                accessibleText="Tienda"
-                                prefWidth="96.0"
-                                prefHeight="96.0"
-                                styleClass="shop-button">
+                        <Button fx:id="tiendaButton" accessibleText="Tienda" prefHeight="96.0" prefWidth="96.0" styleClass="shop-button">
 
                             <graphic>
-                                <SVGPath content="M4 14 V30 H28 V14 M2 14 L6 4 H26 L30 14 M2 14 Q6 22 10 14 Q14 22 18 14 Q22 22 26 14 Q30 22 30 14 M10 30 V22 H18 V30 M22 22 H26 V26 H22 Z"
-                                         fill="TRANSPARENT"
-                                         stroke="WHITE"
-                                         strokeWidth="1.8"
-                                         scaleX="2.0"
-                                         scaleY="2.0"/>
+                                <SVGPath content="M4 14 V30 H28 V14 M2 14 L6 4 H26 L30 14 M2 14 Q6 22 10 14 Q14 22 18 14 Q22 22 26 14 Q30 22 30 14 M10 30 V22 H18 V30 M22 22 H26 V26 H22 Z" fill="TRANSPARENT" scaleX="2.0" scaleY="2.0" stroke="WHITE" strokeWidth="1.8" />
                             </graphic>
                         </Button>
 
-                        <VBox fx:id="fallosPane"
-                              spacing="8.0"
-                              alignment="CENTER"
-                              prefWidth="216.0"
-                              prefHeight="216.0"
-                              maxWidth="216.0"
-                              styleClass="failures-panel">
+                        <VBox fx:id="fallosPane" alignment="CENTER" maxWidth="216.0" prefHeight="216.0" prefWidth="216.0" spacing="8.0" styleClass="failures-panel">
 
                             <padding>
-                                <Insets top="16.0" right="16.0"
-                                        bottom="12.0" left="16.0"/>
+                                <Insets bottom="12.0" left="16.0" right="16.0" top="16.0" />
                             </padding>
 
                             <children>
 
-                                <GridPane hgap="10.0"
-                                          vgap="10.0"
-                                          alignment="CENTER">
+                                <GridPane alignment="CENTER" hgap="10.0" vgap="10.0">
 
                                     <children>
-                                        <ToggleButton fx:id="fallo1"
-                                                      accessibleText="Fallo 1"
-                                                      styleClass="failure-box"
-                                                      GridPane.columnIndex="0"
-                                                      GridPane.rowIndex="0"/>
+                                        <ToggleButton fx:id="fallo1" accessibleText="Fallo 1" styleClass="failure-box" GridPane.columnIndex="0" GridPane.rowIndex="0" />
 
-                                        <ToggleButton fx:id="fallo2"
-                                                      accessibleText="Fallo 2"
-                                                      styleClass="failure-box"
-                                                      GridPane.columnIndex="1"
-                                                      GridPane.rowIndex="0"/>
+                                        <ToggleButton fx:id="fallo2" accessibleText="Fallo 2" styleClass="failure-box" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                                        <ToggleButton fx:id="fallo3"
-                                                      accessibleText="Fallo 3"
-                                                      styleClass="failure-box"
-                                                      GridPane.columnIndex="0"
-                                                      GridPane.rowIndex="1"/>
+                                        <ToggleButton fx:id="fallo3" accessibleText="Fallo 3" styleClass="failure-box" GridPane.columnIndex="0" GridPane.rowIndex="1" />
 
-                                        <ToggleButton fx:id="fallo4"
-                                                      accessibleText="Fallo 4"
-                                                      styleClass="failure-box"
-                                                      GridPane.columnIndex="1"
-                                                      GridPane.rowIndex="1"/>
+                                        <ToggleButton fx:id="fallo4" accessibleText="Fallo 4" styleClass="failure-box" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                     </children>
+                           <columnConstraints>
+                              <ColumnConstraints />
+                              <ColumnConstraints />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints />
+                              <RowConstraints />
+                           </rowConstraints>
                                 </GridPane>
 
-                                <Label text="Fallos"
-                                       styleClass="failures-title"/>
+                                <Label styleClass="failures-title" text="Fallos" />
 
                             </children>
                         </VBox>
@@ -470,58 +297,38 @@
         </AnchorPane>
 
         <!-- RESUMEN DE PUNTOS -->
-        <HBox fx:id="resumenPuntos"
-              alignment="CENTER_LEFT"
-              prefHeight="75.0"
-              AnchorPane.leftAnchor="166.0"
-              AnchorPane.bottomAnchor="153.0">
+        <HBox fx:id="resumenPuntos" alignment="CENTER_LEFT" layoutX="330.0" layoutY="1597.0" prefHeight="75.0" AnchorPane.bottomAnchor="139.0" AnchorPane.leftAnchor="330.0">
 
             <children>
 
-                <Label text="Total"
-                       prefWidth="118.0"
-                       prefHeight="75.0"
-                       styleClass="total-caption"/>
+                <Label prefHeight="75.0" prefWidth="118.0" styleClass="total-caption" text="Total" />
 
-                <Region prefWidth="40.0"/>
+                <Region prefWidth="40.0" />
 
-                <Label fx:id="puntosRojosLabel"
-                       text=""
-                       styleClass="points-box, red-points"/>
+                <Label fx:id="puntosRojosLabel" styleClass="points-box, red-points" text="" />
 
-                <Label text="+" styleClass="operator"/>
+                <Label styleClass="operator" text="+" />
 
-                <Label fx:id="puntosAmarillosLabel"
-                       text=""
-                       styleClass="points-box, yellow-points"/>
+                <Label fx:id="puntosAmarillosLabel" styleClass="points-box, yellow-points" text="" />
 
-                <Label text="+" styleClass="operator"/>
+                <Label styleClass="operator" text="+" />
 
-                <Label fx:id="puntosVerdesLabel"
-                       text=""
-                       styleClass="points-box, green-points"/>
+                <Label fx:id="puntosVerdesLabel" styleClass="points-box, green-points" text="" />
 
-                <Label text="+" styleClass="operator"/>
+                <Label styleClass="operator" text="+" />
 
-                <Label fx:id="puntosAzulesLabel"
-                       text=""
-                       styleClass="points-box, blue-points"/>
+                <Label fx:id="puntosAzulesLabel" styleClass="points-box, blue-points" text="" />
 
-                <Label text="-" styleClass="operator"/>
+                <Label styleClass="operator" text="-" />
 
-                <Label fx:id="penalizacionLabel"
-                       text=""
-                       styleClass="points-box, penalty-points"/>
+                <Label fx:id="penalizacionLabel" styleClass="points-box, penalty-points" text="" />
 
-                <Label text="=" styleClass="operator"/>
+                <Label styleClass="operator" text="=" />
 
-                <Label fx:id="puntuacionTotalLabel"
-                       text=""
-                       styleClass="final-total"/>
+                <Label fx:id="puntuacionTotalLabel" styleClass="final-total" text="" />
 
             </children>
         </HBox>
 
     </children>
 </AnchorPane>
-

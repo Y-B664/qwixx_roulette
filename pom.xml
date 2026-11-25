@@ -14,7 +14,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.48</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
         <!--  Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api  -->
         <dependency>
@@ -50,6 +50,20 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>gui.Launcher</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.48</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
         </plugins>
