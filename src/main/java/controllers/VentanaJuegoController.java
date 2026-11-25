@@ -47,7 +47,7 @@ public class VentanaJuegoController {
     @FXML private AnchorPane juegoRoot;
     @FXML private Group ruletaGroup;
     @FXML private Button confirmarGiroButton;
-    @FXML private  Label temporizadorLabel;
+    @FXML private Label temporizadorLabel;
     @FXML private Label saldoJugadorLabel;
     @FXML private HBox filaRoja;
     @FXML private HBox filaAmarilla;
@@ -56,6 +56,8 @@ public class VentanaJuegoController {
     private final ImpOperacionesRegistro impOperacionesRegistro = new ImpOperacionesRegistro();
     @FXML private Button instruccionesButton;
     @FXML private Button finalizarButton;
+    @FXML private Button powerUpsButton;
+    @FXML private Button tiendaButton;
     @FXML private Label puntosRojosLabel;
     @FXML private Label puntosAmarillosLabel;
     @FXML private Label puntosVerdesLabel;
@@ -71,6 +73,7 @@ public class VentanaJuegoController {
     private final GestorRuleta gestorRuleta = new GestorRuleta();
     private final GestorApuesta gestorApuesta = new GestorApuesta();
     private final GestorTienda gestorTienda = new GestorTienda();
+    private final GestorStack gestorStack = new GestorStack();
     private final GestorTemporizador gestorTemporizador = new GestorTemporizador();
     private final GestorCarton gestorCarton = new GestorCarton();
     private final GestorJugador gestorJugador;
@@ -93,6 +96,12 @@ public class VentanaJuegoController {
     private CasillaRuleta resultadoActual;
     private Bot botRival;
     private IndicadorTurnoUI indicadorTurno;
+
+    // Estados de comodines activos en el turno del jugador
+    private boolean comodinColorActivo = false;
+    private boolean saltoIzquierdaActivo = false;
+    private boolean doblePuntajeActivo = false;
+    private boolean seguroApuestaActivo = false;
 
     public VentanaJuegoController() {
         this.daoRegistro = crearDaoSeguro();
@@ -174,6 +183,12 @@ public class VentanaJuegoController {
         if (finalizarButton != null) {
             finalizarButton.setOnAction(e -> finalizarYAbrirResultados());
         }
+        if (tiendaButton != null) {
+            tiendaButton.setOnAction(e -> abrirModalTienda());
+        }
+        if (powerUpsButton != null) {
+            powerUpsButton.setOnAction(e -> abrirModalPowerUps());
+        }
     }
 
     private void agregarBotonVolver() {
@@ -192,6 +207,7 @@ public class VentanaJuegoController {
     }
 
     private void volverADificultad() {
+        pausarTemporizador();
         gestorPartida.cancelarPartida();
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ventanaDificultad.fxml"));
@@ -232,7 +248,7 @@ public class VentanaJuegoController {
                     "Una vez realizada tu apuesta, estarás listo para continuar con el juego.";
             mostrarModalInstruccion("Puntos iniciales", instruccion);
         }
-        jugador = gestorJugador.crearJugador(nombreJugador,new Stack<>(),gestorCarton.crearCarton(4));
+        jugador = gestorJugador.crearJugador(nombreJugador, new Stack<>(), gestorCarton.crearCarton(4));
         cartonJugador = jugador.getCarton();
         Partida partida = gestorPartida.iniciarPartida(2, jugador);
         inicializarTemporizador(partida.getTiempoPorTurnoSegundos());
@@ -258,14 +274,15 @@ public class VentanaJuegoController {
         dibujarNumerosRuleta();
 
         List<PowerUp> ofertaTienda = gestorTienda.generarOfertaAleatoria();
-        PowerUp comodinInicial = ofertaTienda.isEmpty() ? null : ofertaTienda.get(0);
-        if (comodinInicial != null && this.botRival != null) {
-            @SuppressWarnings("unchecked")
-            Stack<Object> mazoBot = this.botRival.getMazoPowerUps();
-            if (mazoBot != null) {
-                mazoBot.push(comodinInicial);
+        PowerUp comodinInicial = ofertaTienda.isEmpty() ? null : ofertaTienda.get(0).clonarDisponible();
+        if (comodinInicial != null) {
+            gestorStack.agregarPowerUp(jugador.getMazoPowerUps(), comodinInicial);
+            if (this.botRival != null && this.botRival.getMazoPowerUps() != null) {
+                gestorStack.agregarPowerUp(this.botRival.getMazoPowerUps(), comodinInicial.clonarDisponible());
             }
         }
+        gestorTienda.generarOfertaAleatoria();
+        actualizarBotonPowerUps();
 
         Apuesta apuestaInicial = solicitarApuestaInicialJavaFX();
         if (apuestaInicial == null) {
@@ -331,6 +348,299 @@ public class VentanaJuegoController {
         });
         return true;
     }
+
+    // ==================== TIENDA Y POWER-UPS ====================
+
+    private void actualizarBotonPowerUps() {
+        if (powerUpsButton == null || jugador == null) {
+            return;
+        }
+        int cantidad = gestorStack.obtenerDisponibles(jugador.getMazoPowerUps()).size();
+        powerUpsButton.setText("PowerUps (" + cantidad + ")");
+    }
+
+    private void abrirModalTienda() {
+        if (jugador == null) {
+            return;
+        }
+
+        Stage modal = new Stage();
+        if (juegoRoot.getScene() != null && juegoRoot.getScene().getWindow() != null) {
+            modal.initOwner(juegoRoot.getScene().getWindow());
+        }
+        modal.initModality(Modality.APPLICATION_MODAL);
+        modal.initStyle(StageStyle.TRANSPARENT);
+
+        VBox contenedor = new VBox(16);
+        contenedor.setAlignment(Pos.CENTER);
+        contenedor.setPadding(new Insets(26, 30, 26, 30));
+        contenedor.setPrefWidth(680);
+        contenedor.setStyle("""
+                -fx-background-color: #FFFFFF;
+                -fx-background-radius: 24;
+                -fx-border-color: #191919;
+                -fx-border-width: 3;
+                -fx-border-radius: 24;
+                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 22, 0, 0, 8);
+                """);
+
+        Label lblTitulo = new Label("TIENDA DE COMODINES");
+        lblTitulo.setStyle("-fx-font-family: 'Pixelify Sans'; -fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #191919;");
+
+        Label lblSaldoModal = new Label();
+        lblSaldoModal.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #191919; " +
+                "-fx-background-color: #FBC02D; -fx-padding: 6 16 6 16; -fx-background-radius: 14;");
+
+        Label lblMensaje = new Label("Elige un comodín para añadirlo a tu mazo.");
+        lblMensaje.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+
+        HBox cardsBox = new HBox(14);
+        cardsBox.setAlignment(Pos.CENTER);
+
+        Runnable[] renderizarOferta = new Runnable[1];
+        renderizarOferta[0] = () -> {
+            lblSaldoModal.setText("Tu saldo disponible: " + jugador.getSaldoPuntos() + " puntos");
+            cardsBox.getChildren().clear();
+
+            Tienda tienda = gestorTienda.abrirTienda();
+            List<PowerUp> oferta = tienda.getCartasDisponibles().getPowerUps();
+
+            for (PowerUp item : oferta) {
+                VBox card = new VBox(10);
+                card.setAlignment(Pos.TOP_CENTER);
+                card.setPadding(new Insets(16));
+                card.setPrefWidth(195);
+                card.setPrefHeight(225);
+                card.setStyle("""
+                        -fx-background-color: #F9F9F6;
+                        -fx-background-radius: 18;
+                        -fx-border-color: #191919;
+                        -fx-border-width: 2;
+                        -fx-border-radius: 18;
+                        """);
+
+                Label nombre = new Label(item.getNombre());
+                nombre.setWrapText(true);
+                nombre.setTextAlignment(TextAlignment.CENTER);
+                nombre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #191919;");
+
+                Label desc = new Label(item.getDescripcion());
+                desc.setWrapText(true);
+                desc.setTextAlignment(TextAlignment.CENTER);
+                desc.setPrefHeight(88);
+                desc.setStyle("-fx-font-size: 12px; -fx-text-fill: #444444;");
+
+                Label costo = new Label(item.getCosto() + " pts");
+                costo.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
+
+                Button btnComprar = new Button("Comprar");
+                btnComprar.setPrefSize(140, 36);
+                boolean puedePagar = jugador.getSaldoPuntos() >= item.getCosto();
+                btnComprar.setDisable(!puedePagar);
+                btnComprar.setStyle(puedePagar
+                        ? "-fx-background-color: #191919; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12; -fx-cursor: hand;"
+                        : "-fx-background-color: #CCCCCC; -fx-text-fill: #666666; -fx-font-weight: bold; -fx-background-radius: 12;");
+
+                btnComprar.setOnAction(ev -> {
+                    if (gestorTienda.comprarPowerUp(item, jugador)) {
+                        gestorStack.agregarPowerUp(jugador.getMazoPowerUps(), item);
+                        actualizarSaldoJugador();
+                        actualizarBotonPowerUps();
+                        lblMensaje.setText("¡Compraste \"" + item.getNombre() + "\"! Ya está en tu mazo.");
+                        lblMensaje.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
+                        renderizarOferta[0].run();
+                    }
+                });
+
+                card.getChildren().addAll(nombre, desc, costo, btnComprar);
+                cardsBox.getChildren().add(card);
+            }
+        };
+
+        renderizarOferta[0].run();
+
+        Button btnRefrescar = new Button("Cambiar oferta (1 pt)");
+        btnRefrescar.setPrefSize(185, 40);
+        btnRefrescar.setStyle("-fx-background-color: #F5F5F0; -fx-text-fill: #191919; -fx-font-weight: bold; " +
+                "-fx-border-color: #191919; -fx-border-width: 2; -fx-background-radius: 14; -fx-border-radius: 14; -fx-cursor: hand;");
+        btnRefrescar.setOnAction(e -> {
+            if (jugador.getSaldoPuntos() < 1) {
+                lblMensaje.setText("Necesitas al menos 1 punto para cambiar la oferta.");
+                lblMensaje.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #C62828;");
+                return;
+            }
+            jugador.setSaldoPuntos(jugador.getSaldoPuntos() - 1);
+            actualizarSaldoJugador();
+            gestorTienda.generarOfertaAleatoria();
+            lblMensaje.setText("Oferta renovada.");
+            lblMensaje.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+            renderizarOferta[0].run();
+        });
+
+        Button btnCerrar = new Button("Cerrar");
+        btnCerrar.setPrefSize(140, 40);
+        btnCerrar.setStyle("-fx-background-color: #191919; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 14; -fx-cursor: hand;");
+        btnCerrar.setOnAction(e -> modal.close());
+
+        HBox footer = new HBox(14, btnRefrescar, btnCerrar);
+        footer.setAlignment(Pos.CENTER);
+
+        contenedor.getChildren().addAll(lblTitulo, lblSaldoModal, cardsBox, lblMensaje, footer);
+
+        Scene scene = new Scene(contenedor);
+        scene.setFill(Color.TRANSPARENT);
+        modal.setScene(scene);
+        modal.showAndWait();
+    }
+
+    private void abrirModalPowerUps() {
+        if (jugador == null) {
+            return;
+        }
+
+        Stage modal = new Stage();
+        if (juegoRoot.getScene() != null && juegoRoot.getScene().getWindow() != null) {
+            modal.initOwner(juegoRoot.getScene().getWindow());
+        }
+        modal.initModality(Modality.APPLICATION_MODAL);
+        modal.initStyle(StageStyle.TRANSPARENT);
+
+        VBox contenedor = new VBox(16);
+        contenedor.setAlignment(Pos.CENTER);
+        contenedor.setPadding(new Insets(26, 30, 26, 30));
+        contenedor.setPrefWidth(620);
+        contenedor.setStyle("""
+                -fx-background-color: #FFFFFF;
+                -fx-background-radius: 24;
+                -fx-border-color: #191919;
+                -fx-border-width: 3;
+                -fx-border-radius: 24;
+                -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 22, 0, 0, 8);
+                """);
+
+        Label lblTitulo = new Label("MIS COMODINES (POWER-UPS)");
+        lblTitulo.setStyle("-fx-font-family: 'Pixelify Sans'; -fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #191919;");
+
+        VBox listaBox = new VBox(10);
+        listaBox.setAlignment(Pos.CENTER);
+
+        List<PowerUp> disponibles = gestorStack.obtenerDisponibles(jugador.getMazoPowerUps());
+        if (disponibles.isEmpty()) {
+            Label vacio = new Label("No tienes comodines disponibles en tu mazo.\nVisita la Tienda para adquirir uno con tus puntos.");
+            vacio.setTextAlignment(TextAlignment.CENTER);
+            vacio.setStyle("-fx-font-size: 15px; -fx-text-fill: #555555; -fx-padding: 18;");
+            listaBox.getChildren().add(vacio);
+        } else {
+            for (PowerUp powerUp : disponibles) {
+                HBox fila = new HBox(14);
+                fila.setAlignment(Pos.CENTER_LEFT);
+                fila.setPadding(new Insets(12, 16, 12, 16));
+                fila.setStyle("""
+                        -fx-background-color: #F9F9F6;
+                        -fx-background-radius: 16;
+                        -fx-border-color: #191919;
+                        -fx-border-width: 2;
+                        -fx-border-radius: 16;
+                        """);
+
+                VBox textos = new VBox(4);
+                HBox.setHgrow(textos, Priority.ALWAYS);
+
+                Label nombre = new Label(powerUp.getNombre());
+                nombre.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #191919;");
+
+                Label desc = new Label(powerUp.getDescripcion());
+                desc.setWrapText(true);
+                desc.setStyle("-fx-font-size: 12px; -fx-text-fill: #444444;");
+
+                textos.getChildren().addAll(nombre, desc);
+
+                Button btnUsar = new Button("Activar");
+                btnUsar.setPrefSize(110, 38);
+                btnUsar.setStyle("-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12; -fx-cursor: hand;");
+                btnUsar.setOnAction(ev -> {
+                    modal.close();
+                    activarPowerUpJugador(powerUp);
+                });
+
+                fila.getChildren().addAll(textos, btnUsar);
+                listaBox.getChildren().add(fila);
+            }
+        }
+
+        Button btnCerrar = new Button("Cerrar");
+        btnCerrar.setPrefSize(140, 40);
+        btnCerrar.setStyle("-fx-background-color: #191919; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 14; -fx-cursor: hand;");
+        btnCerrar.setOnAction(e -> modal.close());
+
+        contenedor.getChildren().addAll(lblTitulo, listaBox, btnCerrar);
+
+        Scene scene = new Scene(contenedor);
+        scene.setFill(Color.TRANSPARENT);
+        modal.setScene(scene);
+        modal.showAndWait();
+    }
+
+    private void activarPowerUpJugador(PowerUp powerUp) {
+        if (powerUp == null || jugador == null) {
+            return;
+        }
+        if (!gestorStack.usarPowerUp(jugador.getMazoPowerUps(), powerUp)) {
+            return;
+        }
+
+        powerUp.aplicarEfecto(jugador);
+        actualizarBotonPowerUps();
+        actualizarSaldoJugador();
+
+        String nombre = powerUp.getNombre() != null ? powerUp.getNombre() : "";
+        String detalleActivacion = switch (nombre) {
+            case "Doble Puntaje" -> {
+                this.doblePuntajeActivo = true;
+                yield "Recibiste +6 puntos de bonificación y tu próxima ganancia será doble.";
+            }
+            case "Anular Fallo" -> {
+                boolean quitado = quitarUltimoFalloVisual();
+                yield quitado
+                        ? "Se anuló tu último fallo marcado en el tablero."
+                        : "Comodín activado (no tenías fallos marcados, recibes +2 puntos compensatorios).";
+            }
+            case "Comodín Color" -> {
+                this.comodinColorActivo = true;
+                yield "Comodín Color activo: ahora puedes marcar cualquier casilla libre de cualquier fila.";
+            }
+            case "Salto Izquierda" -> {
+                this.saltoIzquierdaActivo = true;
+                yield "Salto Izquierda activo: puedes marcar una casilla a la izquierda de tus marcas actuales.";
+            }
+            case "Seguro de Apuesta" -> {
+                this.seguroApuestaActivo = true;
+                yield "Recibiste +3 puntos de respaldo y tu próxima apuesta quedó protegida.";
+            }
+            default -> "Comodín \"" + nombre + "\" activado en tu turno.";
+        };
+
+        if ("Anular Fallo".equals(nombre) && !detalleActivacion.contains("Se anuló")) {
+            jugador.setSaldoPuntos(jugador.getSaldoPuntos() + 2);
+            actualizarSaldoJugador();
+        }
+
+        mostrarModalInstruccion("Comodín Activado", detalleActivacion);
+    }
+
+    private boolean quitarUltimoFalloVisual() {
+        ToggleButton[] fallos = {fallo4, fallo3, fallo2, fallo1};
+        for (ToggleButton fallo : fallos) {
+            if (fallo != null && fallo.isSelected()) {
+                fallo.setSelected(false);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ==================== LÓGICA DE PARTIDA DE TU COMPAÑERA ====================
+
     private boolean esApuestaGanadora(Apuesta apuesta, CasillaRuleta resultado) {
         if (apuesta == null || resultado == null || apuesta.getTipo() == null
                 || !gestorApuesta.validarApuesta(apuesta)) {
@@ -347,7 +657,6 @@ public class VentanaJuegoController {
                     || (resultado.getValor() % 2 != 0 && prediccion.equals("IMPAR")));
         };
     }
-
 
     private void ejecutarTurnoBotRival() {
         if (botRival == null) {
@@ -419,6 +728,7 @@ public class VentanaJuegoController {
     }
 
     private void finalizarYAbrirResultados() {
+        pausarTemporizador();
         if (gestorPartida.getPartida() != null) {
             gestorPartida.calcularPuntajeFinal();
         }
@@ -433,6 +743,9 @@ public class VentanaJuegoController {
                 ? jugadorPrincipal.getNombreUsuario()
                 : nombreJugador;
         int puntosFinales = (jugadorPrincipal != null) ? jugadorPrincipal.getSaldoPuntos() : 0;
+        if (doblePuntajeActivo) {
+            puntosFinales *= 2;
+        }
 
         try {
             if (daoRegistro != null && nombreFinal != null && !nombreFinal.isBlank()) {
@@ -836,7 +1149,8 @@ public class VentanaJuegoController {
             dialog.show();
         }
     }
-    private void girarRuleta(Consumer<CasillaRuleta> alFinalizar){
+
+    private void girarRuleta(Consumer<CasillaRuleta> alFinalizar) {
         giroConfirmado = false;
         if (confirmarGiroButton != null) {
             confirmarGiroButton.setText("Confirmar giro");
@@ -850,6 +1164,7 @@ public class VentanaJuegoController {
         rotateTransition.setToAngle(ruletaGroup.getRotate() + 720);
         rotateTransition.setCycleCount(2);
         CasillaRuleta resultado = gestorRuleta.girarRuleta();
+        this.resultadoActual = resultado;
         rotateTransition.setOnFinished(event -> {
             Platform.runLater(() -> {
                 confirmarGiroButton.setDisable(false);
@@ -858,6 +1173,7 @@ public class VentanaJuegoController {
         });
         rotateTransition.play();
     }
+
     private void mostrarModalResultadoRuleta(CasillaRuleta resultado, Runnable alCerrar) {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
@@ -971,7 +1287,8 @@ public class VentanaJuegoController {
             ruletaGroup.getChildren().add(etiqueta);
         }
     }
-    private void iniciarTemporizador(){
+
+    private void iniciarTemporizador() {
         if (temporizador == null) {
             throw new IllegalStateException("El temporizador no ha sido inicializado.");
         }
@@ -993,7 +1310,7 @@ public class VentanaJuegoController {
         reiniciarTemporizador();
     }
 
-    private void reiniciarTemporizador(){
+    private void reiniciarTemporizador() {
         segundosRestantes = totalSegundos;
         temporizadorLabel.setText(darFormatoTiempo(segundosRestantes));
     }
@@ -1032,24 +1349,28 @@ public class VentanaJuegoController {
             ejecutarTurnoBotRival();
         }
     }
-    private void pausarTemporizador(){
-        temporizadorActivo=false;
+
+    private void pausarTemporizador() {
+        temporizadorActivo = false;
         if (temporizador != null) {
             temporizador.pause();
         }
-
     }
-    private void actualizarUI(){
+
+    private void actualizarUI() {
         temporizadorLabel.setText(darFormatoTiempo(segundosRestantes));
     }
-    private String darFormatoTiempo(int segundos){
+
+    private String darFormatoTiempo(int segundos) {
         int minutos = segundos / 60;
-        int segundosT = segundos %60;
-        return String.format("%02d:%02d",minutos,segundosT);
+        int segundosT = segundos % 60;
+        return String.format("%02d:%02d", minutos, segundosT);
     }
+
     public void actualizarSaldoJugador() {
         saldoJugadorLabel.setText("Saldo: " + jugador.getSaldoPuntos() + " puntos");
     }
+
     private void ponerFilasCarton() {
         Map<datos.Color, HBox> vistas = new EnumMap<>(datos.Color.class);
         vistas.put(datos.Color.ROJO, filaRoja);
@@ -1071,9 +1392,17 @@ public class VentanaJuegoController {
                 boton.setText(Integer.toString(casilla.getValor()));
 
                 boton.setOnAction(event -> {
-                    if (resultadoActual != null
-                            && gestorCarton.validarMarcacion(fila, casilla, resultadoActual)) {
+                    boolean validaNormal = resultadoActual != null
+                            && gestorCarton.validarMarcacion(fila, casilla, resultadoActual);
+                    boolean validaPorComodin = comodinColorActivo || saltoIzquierdaActivo;
+
+                    if (validaNormal || validaPorComodin) {
                         boton.setDisable(true);
+                        if (!validaNormal && comodinColorActivo) {
+                            comodinColorActivo = false;
+                        } else if (!validaNormal && saltoIzquierdaActivo) {
+                            saltoIzquierdaActivo = false;
+                        }
                     }
                 });
             }
