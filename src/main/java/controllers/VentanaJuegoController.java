@@ -96,6 +96,7 @@ public class VentanaJuegoController {
     private CasillaRuleta resultadoActual;
     private Bot botRival;
     private IndicadorTurnoUI indicadorTurno;
+    private boolean casillaMarcadaEnTurno;
 
     // Estados de comodines activos en el turno del jugador
     private boolean comodinColorActivo = false;
@@ -323,6 +324,8 @@ public class VentanaJuegoController {
         String nombreComodin = (comodinInicial != null) ? comodinInicial.getNombre() : "Comodín aleatorio listo";
         girarRuleta(resultado -> {
             this.resultadoActual = resultado;
+            this.casillaMarcadaEnTurno = false;
+            actualizarCasillasDisponibles(resultado);
             if (esApuestaGanadora(apuestaInicial, resultado)) {
                 int premio = gestorApuesta.calcularPagoDinamico();
                 jugador.setSaldoPuntos(jugador.getSaldoPuntos() + premio);
@@ -722,6 +725,8 @@ public class VentanaJuegoController {
 
         girarRuleta(resultado -> {
             this.resultadoActual = resultado;
+            this.casillaMarcadaEnTurno = false;
+            actualizarCasillasDisponibles(resultado);
             reiniciarTemporizador();
             iniciarTemporizador();
         });
@@ -1370,13 +1375,16 @@ public class VentanaJuegoController {
     public void actualizarSaldoJugador() {
         saldoJugadorLabel.setText("Saldo: " + jugador.getSaldoPuntos() + " puntos");
     }
-
-    private void ponerFilasCarton() {
+    private Map<datos.Color, HBox> obtenerVistasFilasCarton() {
         Map<datos.Color, HBox> vistas = new EnumMap<>(datos.Color.class);
         vistas.put(datos.Color.ROJO, filaRoja);
         vistas.put(datos.Color.AMARILLO, filaAmarilla);
         vistas.put(datos.Color.VERDE, filaVerde);
         vistas.put(datos.Color.AZUL, filaAzul);
+        return vistas;
+    }
+    private void ponerFilasCarton() {
+        Map<datos.Color, HBox> vistas = obtenerVistasFilasCarton();
 
         for (FilaColor fila : cartonJugador.getFilas()) {
             HBox vista = vistas.get(fila.getColor());
@@ -1390,23 +1398,20 @@ public class VentanaJuegoController {
                 Button boton = (Button) vista.getChildren().get(i);
                 CasillaCarton casilla = casillas[i];
                 boton.setText(Integer.toString(casilla.getValor()));
+                boton.setDisable(true);
 
                 boton.setOnAction(event -> {
-                    boolean validaNormal = resultadoActual != null
-                            && gestorCarton.validarMarcacion(fila, casilla, resultadoActual);
-                    boolean validaPorComodin = comodinColorActivo || saltoIzquierdaActivo;
-
-                    if (validaNormal || validaPorComodin) {
-                        boton.setDisable(true);
-                        if (!validaNormal && comodinColorActivo) {
-                            comodinColorActivo = false;
-                        } else if (!validaNormal && saltoIzquierdaActivo) {
-                            saltoIzquierdaActivo = false;
-                        }
+                    if (resultadoActual == null || !validarYMarcarCasilla(fila, casilla, resultadoActual)) {
+                        return;
                     }
+                    casillaMarcadaEnTurno = true;
+                    gestorCarton.bloquearIzquierda(casilla.getValor(), fila);
+                    gestorCarton.validarCierreCandado(fila);
+                    actualizarCasillasDisponibles(resultadoActual);
                 });
             }
         }
+        actualizarCasillasDisponibles(resultadoActual);
     }
     private void actualizarFallos() {
         int fallos = jugador.getCarton().getFallos();
@@ -1414,6 +1419,60 @@ public class VentanaJuegoController {
         for (int i = 0; i < indicadores.length; i++) {
             if (indicadores[i] != null) {
                 indicadores[i].setSelected(i < fallos);
+            }
+        }
+    }
+    private boolean validarYMarcarCasilla(
+            FilaColor fila,
+            CasillaCarton casilla,
+            CasillaRuleta resultado) {
+        if (casillaMarcadaEnTurno) {
+            return false;
+        }
+        boolean esCeroVerde = resultado.getValor() == 0 && resultado.getColor() == datos.Color.VERDE;
+        if (!esCeroVerde) {
+            return gestorCarton.validarMarcacion(fila, casilla, resultado);
+        }
+        if (fila == null || casilla == null || fila.isEstaBloqueadaGlobal()
+                || casilla.isMarcada() || casilla.isBloqueada()) {
+            return false;
+        }
+        casilla.setMarcada(true);
+        return true;
+    }
+
+    private void actualizarCasillasDisponibles(CasillaRuleta resultado) {
+        if (resultado == null || cartonJugador == null || cartonJugador.getFilas() == null) {
+            return;
+        }
+
+        Map<datos.Color, HBox> vistas = obtenerVistasFilasCarton();
+        boolean esCeroVerde = resultado.getValor() == 0 && resultado.getColor() == datos.Color.VERDE;
+        for (FilaColor fila : cartonJugador.getFilas()) {
+            HBox vista = vistas.get(fila.getColor());
+            CasillaCarton[] casillas = fila.getCasillas();
+            if (vista == null || casillas == null || vista.getChildren().size() != casillas.length) {
+                throw new IllegalStateException("La fila del FXML no coincide con el cartón.");
+            }
+
+            boolean colorPermitido = esCeroVerde
+                    || (resultado.getColor() == datos.Color.NEGRO
+                    && (fila.getColor() == datos.Color.AMARILLO || fila.getColor() == datos.Color.VERDE))
+                    || (resultado.getColor() == datos.Color.ROJO
+                    && (fila.getColor() == datos.Color.ROJO || fila.getColor() == datos.Color.AZUL));
+            vista.setDisable(!colorPermitido || fila.isEstaBloqueadaGlobal());
+
+            for (int i = 0; i < casillas.length - 1; i++) {
+                CasillaCarton casilla = casillas[i];
+                Button boton = (Button) vista.getChildren().get(i);
+                boolean casillaDisponible = casilla != null
+                        && !fila.isEstaBloqueadaGlobal()
+                        && !casilla.isMarcada()
+                        && !casilla.isBloqueada();
+                boolean valorPermitido = esCeroVerde
+                        || (casilla != null && casilla.getValor() == resultado.getValor());
+                boton.setDisable(casillaMarcadaEnTurno
+                        || !colorPermitido || !valorPermitido || !casillaDisponible);
             }
         }
     }
