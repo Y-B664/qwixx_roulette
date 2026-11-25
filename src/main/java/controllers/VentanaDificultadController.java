@@ -42,15 +42,17 @@ public class VentanaDificultadController {
     @FXML private Button jugarButton;
 
     private String nombreJugador = "Jugador";
-    private Dificultad dificultadSeleccionada;
-    private boolean actualizandoSeleccion;
+    private String dificultadSeleccionada = null;
+    private boolean actualizandoSeleccion = false;
 
     private Image drakoPng;
     private Image azraelPng;
     private Image valtharionPng;
 
     public void setNombreJugador(String nombreJugador) {
-        this.nombreJugador = nombreJugador;
+        if (nombreJugador != null && !nombreJugador.isBlank()) {
+            this.nombreJugador = nombreJugador.trim();
+        }
     }
 
     @FXML
@@ -133,23 +135,32 @@ public class VentanaDificultadController {
         dificilCard.setOnMouseEntered(e -> setImagenSegura(imagenDificilView, valtharionPng));
         dificilCard.setOnMouseExited(e -> setImagenSegura(imagenDificilView, valtharionPng));
 
-        seleccionarFacilButton.setOnAction(e -> seleccionarDificultad(Dificultad.FACIL));
-        seleccionarMediaButton.setOnAction(e -> seleccionarDificultad(Dificultad.MEDIO));
-        seleccionarDificilButton.setOnAction(e -> seleccionarDificultad(Dificultad.DIFICIL));
+        seleccionarFacilButton.setOnAction(e -> seleccionarDificultad("Fácil"));
+        seleccionarMediaButton.setOnAction(e -> seleccionarDificultad("Medio"));
+        seleccionarDificilButton.setOnAction(e -> seleccionarDificultad("Difícil"));
     }
 
-    private void seleccionarDificultad(Dificultad nivel) {
-        if (actualizandoSeleccion || nivel == dificultadSeleccionada) {
+    private void seleccionarDificultad(String nivel) {
+        if (actualizandoSeleccion || nivel.equals(this.dificultadSeleccionada)) {
             return;
         }
-
         actualizandoSeleccion = true;
         try {
-            dificultadSeleccionada = nivel;
+            this.dificultadSeleccionada = nivel;
 
-            seleccionarFacilButton.setText(nivel == Dificultad.FACIL ? "Seleccionado ✓" : "Seleccionar");
-            seleccionarMediaButton.setText(nivel == Dificultad.MEDIO ? "Seleccionado ✓" : "Seleccionar");
-            seleccionarDificilButton.setText(nivel == Dificultad.DIFICIL ? "Seleccionado ✓" : "Seleccionar");
+            String textoFacil = "Fácil".equals(nivel) ? "Seleccionado ✓" : "Seleccionar";
+            String textoMedia = "Medio".equals(nivel) ? "Seleccionado ✓" : "Seleccionar";
+            String textoDificil = "Difícil".equals(nivel) ? "Seleccionado ✓" : "Seleccionar";
+
+            if (!textoFacil.equals(seleccionarFacilButton.getText())) {
+                seleccionarFacilButton.setText(textoFacil);
+            }
+            if (!textoMedia.equals(seleccionarMediaButton.getText())) {
+                seleccionarMediaButton.setText(textoMedia);
+            }
+            if (!textoDificil.equals(seleccionarDificilButton.getText())) {
+                seleccionarDificilButton.setText(textoDificil);
+            }
 
             setImagenSegura(imagenFacilView, drakoPng);
             setImagenSegura(imagenMediaView, azraelPng);
@@ -157,6 +168,14 @@ public class VentanaDificultadController {
         } finally {
             actualizandoSeleccion = false;
         }
+    }
+
+    private Dificultad convertirDificultad(String nivel) {
+        return switch (nivel) {
+            case "Medio" -> Dificultad.MEDIO;
+            case "Difícil" -> Dificultad.DIFICIL;
+            default -> Dificultad.FACIL;
+        };
     }
 
     private void confirmarYPrepararPartida() {
@@ -171,20 +190,26 @@ public class VentanaDificultadController {
             Parent root = loader.load();
 
             VentanaJuegoController juegoController = loader.getController();
-            juegoController.configurarPartida(nombreJugador, dificultadSeleccionada);
-
             Stage stage = (Stage) jugarButton.getScene().getWindow();
-            javafx.scene.Scene escenaDificultad = stage.getScene();
             stage.setScene(Launcher.crearEscenaAjustada(root));
             stage.centerOnScreen();
-            if (!juegoController.iniciarPartida()) {
-                stage.setScene(escenaDificultad);
+
+            Dificultad dificultadEnum = convertirDificultad(dificultadSeleccionada);
+            juegoController.configurarPartida(nombreJugador, dificultadEnum);
+            boolean iniciada = juegoController.iniciarPartida();
+
+            if (!iniciada) {
+                FXMLLoader volverLoader = new FXMLLoader(getClass().getResource("/gui/ventanaDificultad.fxml"));
+                Parent dificultadRootPrevio = volverLoader.load();
+                VentanaDificultadController prevController = volverLoader.getController();
+                prevController.setNombreJugador(nombreJugador);
+                stage.setScene(Launcher.crearEscenaAjustada(dificultadRootPrevio));
                 stage.centerOnScreen();
             }
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
-            mostrarAlerta(Alert.AlertType.ERROR, "Error de navegación",
-                    "No se pudo cargar la pantalla de juego.");
+            mostrarAlerta(Alert.AlertType.ERROR, "Error al iniciar partida",
+                    "No se pudo abrir la ventana de juego: " + ex.getMessage());
         }
     }
 

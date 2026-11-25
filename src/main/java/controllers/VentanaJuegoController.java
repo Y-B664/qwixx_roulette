@@ -1,23 +1,30 @@
-
 package controllers;
 
 import datos.*;
+<<<<<<< HEAD
 import datos.carton.Carton;
 import datos.carton.CasillaCarton;
 import datos.carton.FilaColor;
+=======
+import datos.bot.Bot;
+import datos.bot.DificilBot;
+import datos.bot.MedioBot;
+>>>>>>> da3df3e1135e084ab984e41b905f31cdbb212811
 import gestion.*;
 import gui.IndicadorTurnoUI;
+import gui.Launcher;
 import impOperacionesBD.ImpOperacionesRegistro;
 import javafx.animation.KeyFrame;
 import javafx.animation.RotateTransition;
-import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -28,8 +35,11 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
 import javafx.util.Duration;
+import operacionesBD.GenericDAO;
 
 import java.util.EnumMap;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -47,19 +57,32 @@ public class VentanaJuegoController {
     @FXML private HBox filaVerde;
     @FXML private HBox filaAzul;
     private final ImpOperacionesRegistro impOperacionesRegistro = new ImpOperacionesRegistro();
+    @FXML private Button instruccionesButton;
+    @FXML private Button finalizarButton;
+    @FXML private Label temporizadorLabel;
+    @FXML private Label puntosRojosLabel;
+    @FXML private Label puntosAmarillosLabel;
+    @FXML private Label puntosVerdesLabel;
+    @FXML private Label puntosAzulesLabel;
+    @FXML private Label penalizacionLabel;
+    @FXML private Label puntuacionTotalLabel;
+
+    private final GenericDAO<Registro> daoRegistro;
     private final GestorRuleta gestorRuleta = new GestorRuleta();
     private final GestorApuesta gestorApuesta = new GestorApuesta();
     private final GestorTienda gestorTienda = new GestorTienda();
     private final GestorTemporizador gestorTemporizador = new GestorTemporizador();
     private final GestorCarton gestorCarton = new GestorCarton();
-    private final GestorJugador gestorJugador = new GestorJugador(impOperacionesRegistro);;
-    private final GestorPartida gestorPartida = new GestorPartida(gestorJugador,gestorCarton,gestorTemporizador);
+    private final GestorJugador gestorJugador;
+    private final GestorPartida gestorPartida;
+
     private boolean primeraVez;
     private boolean giroConfirmado;
     private Timeline temporizador;
     private int totalSegundos;
     private int segundosRestantes;
     private int numeroTurno = 0;
+
     private String nombreJugador;
     private String nombreBotRival;
     private Dificultad dificultadBot;
@@ -68,36 +91,180 @@ public class VentanaJuegoController {
     private boolean temporizadorActivo = false;
     private Jugador jugador;
     private CasillaRuleta resultadoActual;
+    private Bot botRival;
+    private IndicadorTurnoUI indicadorTurno;
 
+    public VentanaJuegoController() {
+        this.daoRegistro = crearDaoSeguro();
+        this.gestorJugador = new GestorJugador(this.daoRegistro);
+        this.gestorPartida = new GestorPartida(this.gestorJugador, this.gestorCarton, this.gestorTemporizador);
+    }
+
+    private GenericDAO<Registro> crearDaoSeguro() {
+        try {
+            return new ImpOperacionesRegistro();
+        } catch (Exception ex) {
+            System.out.println("Aviso BD no disponible, usando respaldo en memoria: " + ex.getMessage());
+            return new GenericDAO<>() {
+                private final List<Registro> memoria = new ArrayList<>();
+
+                @Override
+                public int crear(Registro objeto) {
+                    if (objeto == null || objeto.getNombre() == null || objeto.getNombre().isBlank()) {
+                        return 0;
+                    }
+                    if (existePorNombre(objeto.getNombre())) {
+                        return 0;
+                    }
+                    memoria.add(objeto);
+                    return 1;
+                }
+
+                @Override
+                public List<Registro> obtenerTodos() {
+                    return new ArrayList<>(memoria);
+                }
+
+                @Override
+                public int actualizar(Registro objeto) {
+                    if (objeto == null || objeto.getNombre() == null || objeto.getNombre().isBlank()) {
+                        return 0;
+                    }
+                    for (int i = 0; i < memoria.size(); i++) {
+                        Registro actual = memoria.get(i);
+                        if (actual.getNombre() != null && actual.getNombre().equalsIgnoreCase(objeto.getNombre().trim())) {
+                            memoria.set(i, objeto);
+                            return 1;
+                        }
+                    }
+                    return 0;
+                }
+
+                @Override
+                public boolean eliminar(Registro objeto) {
+                    if (objeto == null || objeto.getNombre() == null) {
+                        return false;
+                    }
+                    return memoria.removeIf(r -> r.getNombre() != null && r.getNombre().equalsIgnoreCase(objeto.getNombre().trim()));
+                }
+
+                @Override
+                public boolean existePorNombre(String nombre) {
+                    if (nombre == null) {
+                        return false;
+                    }
+                    return memoria.stream().anyMatch(r -> r.getNombre() != null && r.getNombre().equalsIgnoreCase(nombre.trim()));
+                }
+            };
+        }
+    }
+
+    @FXML
+    public void initialize() {
+        agregarBotonVolver();
+
+        if (instruccionesButton != null) {
+            instruccionesButton.setOnAction(e -> mostrarModalInstruccion(
+                    "Instrucciones",
+                    "Marca los números de izquierda a derecha según el color y número de la ruleta.\n" +
+                            "Si sale 0 Verde, puedes marcar cualquier casilla libre.\n" +
+                            "Necesitas mínimo 5 marcas para cerrar el candado de una fila."
+            ));
+        }
+        if (finalizarButton != null) {
+            finalizarButton.setOnAction(e -> finalizarYAbrirResultados());
+        }
+    }
+
+    private void agregarBotonVolver() {
+        if (juegoRoot == null) {
+            return;
+        }
+        Button volverButton = new Button("← Volver");
+        volverButton.setPrefSize(180, 64);
+        volverButton.setStyle("-fx-font-size: 22px; -fx-text-fill: #191919; -fx-background-color: white; " +
+                "-fx-background-radius: 18; -fx-border-color: #191919; -fx-border-width: 2; " +
+                "-fx-border-radius: 18; -fx-cursor: hand;");
+        AnchorPane.setTopAnchor(volverButton, 155.0);
+        AnchorPane.setLeftAnchor(volverButton, 53.0);
+        volverButton.setOnAction(e -> volverADificultad());
+        juegoRoot.getChildren().add(volverButton);
+    }
+
+    private void volverADificultad() {
+        gestorPartida.cancelarPartida();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ventanaDificultad.fxml"));
+            Parent root = loader.load();
+
+            VentanaDificultadController dificultadController = loader.getController();
+            if (dificultadController != null && nombreJugador != null) {
+                dificultadController.setNombreJugador(nombreJugador);
+            }
+
+            Stage stage = (Stage) juegoRoot.getScene().getWindow();
+            stage.setScene(Launcher.crearEscenaAjustada(root));
+            stage.centerOnScreen();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error de navegación",
+                    "No se pudo regresar a la selección de dificultad.");
+        }
+    }
 
     public void configurarPartida(String nombreJugador, Dificultad dificultadBot) {
         if (dificultadBot == null) {
             throw new IllegalArgumentException("La dificultad del bot es obligatoria.");
         }
-        mostrarPrimeraVez();
         this.nombreJugador = nombreJugador;
         this.dificultadBot = dificultadBot;
         this.nombreBotRival = obtenerNombreBot(dificultadBot);
+        mostrarPrimeraVez();
     }
 
     public boolean iniciarPartida() {
         if (dificultadBot == null) {
             throw new IllegalStateException("La partida debe configurarse antes de iniciarse.");
         }
-        if (primeraVez){
-            String instruccion ="¡Bienvenido al juego!\n" +
+        if (primeraVez) {
+            String instruccion = "¡Bienvenido al juego!\n" +
                     "Al comenzar, recibirás 5 puntos para participar. Antes de iniciar la partida, deberás realizar una apuesta inicial utilizando los puntos disponibles.\n" +
                     "Una vez realizada tu apuesta, estarás listo para continuar con el juego.";
-            mostrarModalInstruccion("Puntos iniciales",instruccion);
+            mostrarModalInstruccion("Puntos iniciales", instruccion);
         }
         jugador = gestorJugador.crearJugador(nombreJugador,new Stack<>(),gestorCarton.crearCarton(4));
         cartonJugador = jugador.getCarton();
         Partida partida = gestorPartida.iniciarPartida(2,jugador);
         inicializarTemporizador(partida.getTiempoPorTurnoSegundos());
+
+        Partida partidaActual = gestorPartida.iniciarPartida(2,jugador);
+        if (partidaActual != null && partidaActual.getJugadores() != null && partidaActual.getJugadores().length > 0) {
+            Jugador jugadorPrincipal = partidaActual.getJugadores()[0];
+            if (jugadorPrincipal != null) {
+                jugadorPrincipal.setNombreUsuario(
+                        (nombreJugador != null && !nombreJugador.isBlank()) ? nombreJugador.trim() : "Jugador"
+                );
+            }
+        }
+
+        this.botRival = gestorPartida.configurarBot(dificultadBot);
+        if (this.botRival != null) {
+            this.botRival.setSaldoPuntos(5);
+            gestorPartida.agregarBot(this.botRival);
+        }
+
         ruleta = gestorRuleta.construirRuleta();
         dibujarNumerosRuleta();
+
         List<PowerUp> ofertaTienda = gestorTienda.generarOfertaAleatoria();
         PowerUp comodinInicial = ofertaTienda.isEmpty() ? null : ofertaTienda.get(0);
+        if (comodinInicial != null && this.botRival != null) {
+            @SuppressWarnings("unchecked")
+            Stack<Object> mazoBot = this.botRival.getMazoPowerUps();
+            if (mazoBot != null) {
+                mazoBot.push(comodinInicial);
+            }
+        }
 
         Apuesta apuestaInicial = solicitarApuestaInicialJavaFX();
         if (apuestaInicial == null) {
@@ -118,7 +285,19 @@ public class VentanaJuegoController {
         jugador.setSaldoPuntos(jugador.getSaldoPuntos() - apuestaInicial.getMonto());
         actualizarSaldoJugador();
 
-        IndicadorTurnoUI indicadorTurno = new IndicadorTurnoUI(
+        if (botRival instanceof MedioBot medioBot) {
+            Apuesta apuestaBot = medioBot.decidirApuesta();
+            if (gestorApuesta.validarApuesta(apuestaBot)) {
+                gestorApuesta.hacerApuesta(apuestaBot);
+            }
+        } else if (botRival instanceof DificilBot dificilBot) {
+            Apuesta apuestaBot = dificilBot.decidirApuesta();
+            if (gestorApuesta.validarApuesta(apuestaBot)) {
+                gestorApuesta.hacerApuesta(apuestaBot);
+            }
+        }
+
+        indicadorTurno = new IndicadorTurnoUI(
                 nombreJugador, nombreBotRival, obtenerTextoDificultad(dificultadBot)
         );
         indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
@@ -166,6 +345,91 @@ public class VentanaJuegoController {
                     || (resultado.getValor() % 2 != 0 && prediccion.equals("IMPAR")));
         };
     }
+
+
+    private void ejecutarTurnoBotRival() {
+        if (botRival == null) {
+            botRival = gestorPartida.configurarBot(dificultadBot);
+            if (botRival != null) {
+                gestorPartida.agregarBot(botRival);
+            }
+        }
+        if (botRival == null) {
+            return;
+        }
+        if (indicadorTurno != null) {
+            indicadorTurno.setTurno(false, nombreJugador, nombreBotRival);
+        }
+
+        if (botRival instanceof MedioBot medioBot) {
+            medioBot.decidirUsoPowerUps();
+        } else if (botRival instanceof DificilBot dificilBot) {
+            dificilBot.decidirUsoPowerUps();
+        }
+
+        CasillaRuleta resultadoActual = (ruleta != null) ? ruleta.getResultadoActual() : null;
+        botRival.ejecutarTurno(resultadoActual, gestorCarton, gestorRuleta.isComodinCeroActivo());
+
+        if (gestorPartida.evaluarCondicionFin()) {
+            gestorPartida.finalizarPartida();
+            finalizarYAbrirResultados();
+            return;
+        }
+
+        this.numeroTurno++;
+        if (indicadorTurno != null) {
+            indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
+        }
+    }
+
+    private void finalizarYAbrirResultados() {
+        if (gestorPartida.getPartida() != null) {
+            gestorPartida.calcularPuntajeFinal();
+        }
+        Jugador jugadorPrincipal = null;
+        if (gestorPartida.getPartida() != null
+                && gestorPartida.getPartida().getJugadores() != null
+                && gestorPartida.getPartida().getJugadores().length > 0) {
+            jugadorPrincipal = gestorPartida.getPartida().getJugadores()[0];
+        }
+
+        String nombreFinal = (jugadorPrincipal != null && jugadorPrincipal.getNombreUsuario() != null)
+                ? jugadorPrincipal.getNombreUsuario()
+                : nombreJugador;
+        int puntosFinales = (jugadorPrincipal != null) ? jugadorPrincipal.getSaldoPuntos() : 0;
+
+        try {
+            if (daoRegistro != null && nombreFinal != null && !nombreFinal.isBlank()) {
+                Registro registroFinal = new Registro(nombreFinal.trim(), puntosFinales);
+                if (daoRegistro.existePorNombre(registroFinal.getNombre())) {
+                    daoRegistro.actualizar(registroFinal);
+                } else {
+                    daoRegistro.crear(registroFinal);
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Aviso al guardar resultado: " + ex.getMessage());
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/VentanaResultados.fxml"));
+            Parent root = loader.load();
+
+            VentanaResultadosController resultadosController = loader.getController();
+            if (resultadosController != null) {
+                resultadosController.configurarContexto(null, nombreFinal, puntosFinales);
+            }
+
+            Stage stage = (Stage) juegoRoot.getScene().getWindow();
+            stage.setScene(Launcher.crearEscenaAjustada(root));
+            stage.centerOnScreen();
+        } catch (IOException e) {
+            e.printStackTrace();
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Partida finalizada",
+                    "Puntaje final de " + nombreFinal + ": " + puntosFinales + " PTS");
+        }
+    }
+
     public void mostrarPrimeraVez() {
         ButtonType si = new ButtonType("Sí", ButtonBar.ButtonData.YES);
         ButtonType no = new ButtonType("No", ButtonBar.ButtonData.NO);
@@ -176,7 +440,7 @@ public class VentanaJuegoController {
         modal.getButtonTypes().setAll(si, no);
         if (juegoRoot.getScene() != null && juegoRoot.getScene().getWindow() != null) {
             modal.initOwner(juegoRoot.getScene().getWindow());
-        }else{
+        } else {
             modal.initOwner(Window.getWindows().stream()
                     .filter(Window::isShowing)
                     .findFirst()
@@ -474,6 +738,7 @@ public class VentanaJuegoController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
     public void mostrarModalInstruccion(String titulo, String instruccion) {
         mostrarModalInstruccion(titulo, instruccion, null);
     }
@@ -537,8 +802,10 @@ public class VentanaJuegoController {
     }
     private void girarRuleta(Consumer<CasillaRuleta> alFinalizar){
         giroConfirmado = false;
-        confirmarGiroButton.setText("Confirmar giro");
-        confirmarGiroButton.setDisable(true);
+        if (confirmarGiroButton != null) {
+            confirmarGiroButton.setText("Confirmar giro");
+            confirmarGiroButton.setDisable(true);
+        }
 
         RotateTransition rotateTransition = new RotateTransition();
         rotateTransition.setDuration(Duration.millis(3000));
@@ -625,10 +892,17 @@ public class VentanaJuegoController {
     @FXML
     private void confirmarGiro() {
         giroConfirmado = true;
-        confirmarGiroButton.setText("Giro confirmado");
-        confirmarGiroButton.setDisable(true);
+        if (confirmarGiroButton != null) {
+            confirmarGiroButton.setText("Giro confirmado");
+            confirmarGiroButton.setDisable(true);
+        }
+        ejecutarTurnoBotRival();
     }
-    private void dibujarNumerosRuleta(){
+
+    private void dibujarNumerosRuleta() {
+        if (ruleta == null || ruletaGroup == null) {
+            return;
+        }
         List<CasillaRuleta> casillas = ruleta.getCasillas();
         if (casillas == null || casillas.isEmpty()) {
             return;
@@ -639,7 +913,7 @@ public class VentanaJuegoController {
 
         for (int indice = 0; indice < casillas.size(); indice++) {
             CasillaRuleta casilla = casillas.get(indice);
-            double angulo = -Math.PI / 2 - Math.toRadians(25)+ indice * espacioAngular;
+            double angulo = -Math.PI / 2 - Math.toRadians(25) + indice * espacioAngular;
             double x = radio * Math.cos(angulo);
             double y = radio * Math.sin(angulo);
 
@@ -744,4 +1018,3 @@ public class VentanaJuegoController {
     }
 
 }
-
