@@ -48,6 +48,8 @@ public class VentanaPrincipalController {
             return;
         }
 
+        this.jugadorEnSesion = nombre;
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/ventanaDificultad.fxml"));
             Parent root = loader.load();
@@ -85,12 +87,12 @@ public class VentanaPrincipalController {
 
     private void mostrarInstrucciones() {
         String reglas = """
-                • Inicias con 5 puntos de casino y debes hacer una apuesta inicial obligatoria antes de girar la ruleta.
-                • Además recibes 1 comodín aleatorio gratis al comenzar.
-                • La ruleta (0-36) determina el color y el número a tachar de izquierda a derecha en tu cartón.
-                • Si sacas 0 Verde, puedes tachar cualquier casilla libre de cualquier fila.
-                • Si no puedes o no quieres tachar, sumas 1 fallo (-5 pts cada uno; al 4.º fallo termina la partida).
-                • También termina cuando se cierran 2 filas (requiere mínimo 5 cruces en la fila para cerrar su candado).
+- Inicias con 5 puntos de casino y debes hacer una apuesta inicial obligatoria antes de girar la ruleta.
+- Además recibes 1 comodín aleatorio gratis al comenzar.
+- La ruleta (0-36) determina el color y el número a tachar de izquierda a derecha en tu cartón.
+- Si sacas 0 Verde, puedes tachar cualquier casilla libre de cualquier fila.
+- Si no puedes o no quieres tachar, sumas 1 fallo (-5 pts cada uno; al 4.º fallo termina la partida).
+- También termina cuando se cierran 2 filas (requiere mínimo 5 cruces en la fila para cerrar su candado).
                 """;
         mostrarAlerta(Alert.AlertType.INFORMATION, "Instrucciones - Qwixx Roulette", reglas);
     }
@@ -100,12 +102,18 @@ public class VentanaPrincipalController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/gui/VentanaResultados.fxml"));
             Parent root = loader.load();
 
+            VentanaResultadosController resultadosController = loader.getController();
+            if (resultadosController != null) {
+                resultadosController.configurarContexto(this, getJugadorEnSesion(), null);
+            }
+
             Stage stage = (Stage) rankingButton.getScene().getWindow();
             stage.setScene(Launcher.crearEscenaAjustada(root));
             stage.centerOnScreen();
         } catch (IOException ex) {
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Ranking",
-                    "La vista de Ranking estará disponible en cuanto se integre VentanaResultados.");
+            ex.printStackTrace();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error de navegación",
+                    "No se pudo cargar la pantalla de Ranking.");
         }
     }
 
@@ -116,7 +124,11 @@ public class VentanaPrincipalController {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
-    public  String getJugadorEnSesion(){
+
+    public String getJugadorEnSesion() {
+        if (nombreUsuarioField != null && nombreUsuarioField.getText() != null && !nombreUsuarioField.getText().isBlank()) {
+            this.jugadorEnSesion = nombreUsuarioField.getText().trim();
+        }
         return this.jugadorEnSesion;
     }
 }
