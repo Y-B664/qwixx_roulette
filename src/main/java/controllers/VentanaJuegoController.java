@@ -12,6 +12,7 @@ import gui.IndicadorTurnoUI;
 import gui.Launcher;
 import impOperacionesBD.ImpOperacionesRegistro;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -45,6 +46,9 @@ import java.util.function.Consumer;
 public class VentanaJuegoController {
 
     private static final int UMBRAL_DEUDA = 5;
+    private static final int MAX_FALLOS = 4;
+    private static final int PUNTOS_POR_FALLO = 5;
+
     @FXML private AnchorPane juegoRoot;
     @FXML private Group ruletaGroup;
     @FXML private Button confirmarGiroButton;
@@ -69,6 +73,7 @@ public class VentanaJuegoController {
     @FXML private ToggleButton fallo2;
     @FXML private ToggleButton fallo3;
     @FXML private ToggleButton fallo4;
+    @FXML private Label ultimoResultadoLabel;
 
     private final GenericDAO<Registro> daoRegistro;
     private final GestorRuleta gestorRuleta = new GestorRuleta();
@@ -174,12 +179,18 @@ public class VentanaJuegoController {
     @FXML
     public void initialize() {
         agregarBotonVolver();
+        configurarBotonesFallosSoloLectura();
+
+        if (confirmarGiroButton != null) {
+            confirmarGiroButton.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0 10 0 10;");
+        }
 
         if (instruccionesButton != null) {
             instruccionesButton.setOnAction(e -> mostrarModalInstruccion(
                     "Instrucciones",
                     "Marca los números de izquierda a derecha según el color y número de la ruleta.\n" +
                             "Si sale 0 Verde, puedes marcar cualquier casilla libre.\n" +
+                            "Si confirmas tu turno sin marcar ningún número (o se acaba el tiempo), sumas 1 fallo. Al llegar a 4 fallos pierdes la partida.\n" +
                             "Necesitas mínimo 5 marcas para cerrar el candado de una fila."
             ));
         }
@@ -191,6 +202,19 @@ public class VentanaJuegoController {
         }
         if (powerUpsButton != null) {
             powerUpsButton.setOnAction(e -> abrirModalPowerUps());
+        }
+    }
+
+    /**
+     * Evita que el jugador pueda hacer clic manualmente sobre las 4 casillas de fallos.
+     */
+    private void configurarBotonesFallosSoloLectura() {
+        ToggleButton[] indicadores = {fallo1, fallo2, fallo3, fallo4};
+        for (ToggleButton indicador : indicadores) {
+            if (indicador != null) {
+                indicador.setMouseTransparent(true);
+                indicador.setFocusTraversable(false);
+            }
         }
     }
 
@@ -254,6 +278,8 @@ public class VentanaJuegoController {
         jugador = gestorJugador.crearJugador(nombreJugador, new Stack<>(), gestorCarton.crearCarton(4));
         cartonJugador = jugador.getCarton();
         ponerFilasCarton();
+        actualizarFallos();
+        actualizarPuntajesCarton();
 
         Partida partidaActual = gestorPartida.iniciarPartida(2, jugador);
         inicializarTemporizador(partidaActual != null ? partidaActual.getTiempoPorTurnoSegundos() : 60);
@@ -323,6 +349,7 @@ public class VentanaJuegoController {
                 nombreJugador, nombreBotRival, obtenerTextoDificultad(dificultadBot)
         );
         indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
+        montarIndicadorTurnoEnPantalla();
 
         String nombreComodin = (comodinInicial != null) ? comodinInicial.getNombre() : "Comodín aleatorio listo";
         girarRuleta(resultado -> {
@@ -334,15 +361,14 @@ public class VentanaJuegoController {
                 jugador.setSaldoPuntos(jugador.getSaldoPuntos() + premio);
             }
             actualizarSaldoJugador();
-            mostrarResumenConIndicador(indicadorTurno, apuestaInicial, nombreComodin, () -> {
+            mostrarResumenConIndicador(apuestaInicial, nombreComodin, () -> {
                 if (primeraVez) {
                     String instruccion = "¡Es tu momento de jugar! Después de realizar tu apuesta y el primer giro, comienza tu turno. Tendrás 1 minuto para realizar tus acciones.\n" +
                             "\n" +
                             "¿Qué debes saber?\n" +
                             "Tiempo límite: Dispones de 1 minuto para completar tu turno. El temporizador comenzará una vez aceptes estas instrucciones.\n" +
-                            "Fallos: Si se agota el tiempo antes de completar tu turno, recibirás un fallo. ¡Ten cuidado! Al acumular 4 fallos, perderás la partida.\n" +
-                            "Acciones disponibles: Durante tu turno podrás realizar las acciones permitidas por el juego para avanzar y alcanzar tu objetivo.\n" +
-                            "Comodines: Al inicio recibirás un comodin de manera aleatoria.\n" +
+                            "Fallos: Si no marcas ningún número en tu turno o se agota el tiempo, recibirás un fallo (-5 pts). ¡Ten cuidado! Al acumular 4 fallos, perderás la partida.\n" +
+                            "Comodines: Al inicio recibirás un comodín de manera aleatoria.\n" +
                             "Pulsa «Entendido» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
                             "\n" +
                             "¡Mucha suerte!";
@@ -350,9 +376,34 @@ public class VentanaJuegoController {
                 } else {
                     iniciarTemporizador();
                 }
+                if (primeraVez){
+                    String instruccion =
+                            "Durante la partida podrás obtener puntos, comprar comodines y utilizarlos estratégicamente para mejorar tus oportunidades.\n" +
+                                    "\n" +
+                                    "¿Cómo funciona?\n" +
+                                    "Puntos: Según el resultado de tu apuesta, recibirás una cantidad determinada de puntos.\n" +
+                                    "Tienda: Podrás acceder a la tienda para comprar comodines, siempre que dispongas de puntos suficientes.\n" +
+                                    "Uso de comodines: Podrás utilizar los comodines que hayas adquirido, respetando sus reglas y condiciones de uso.\n" +
+                                    "Confirmación de giros: Después de cada giro de la ruleta, deberás confirmar el resultado obtenido para que tu turno pueda continuar.\n";
+                    mostrarModalInstruccion("¡Administra tus puntos y comodines!",instruccion,this::abrirModalPowerUps);
+                }
             });
         });
+
+
         return true;
+    }
+
+    private void montarIndicadorTurnoEnPantalla() {
+        if (juegoRoot == null || indicadorTurno == null) {
+            return;
+        }
+        Node nodoTurno = indicadorTurno.getContenedor();
+        if (!juegoRoot.getChildren().contains(nodoTurno)) {
+            AnchorPane.setTopAnchor(nodoTurno, 235.0);
+            AnchorPane.setLeftAnchor(nodoTurno, 53.0);
+            juegoRoot.getChildren().add(nodoTurno);
+        }
     }
 
     // ==================== TIENDA Y POWER-UPS ====================
@@ -589,7 +640,6 @@ public class VentanaJuegoController {
         modal.setScene(scene);
         modal.showAndWait();
 
-        // Se activa después de que el modal anterior cerró por completo para evitar congelamiento
         if (powerUpSeleccionado[0] != null) {
             activarPowerUpJugador(powerUpSeleccionado[0]);
         }
@@ -611,12 +661,13 @@ public class VentanaJuegoController {
         String detalleActivacion = switch (nombre) {
             case "Doble Puntaje" -> {
                 this.doblePuntajeActivo = true;
-                yield "Recibiste +6 puntos de bonificación y tu próxima ganancia será doble.";
+                actualizarPuntajesCarton();
+                yield "Recibiste +6 puntos de bonificación y tu puntaje total será doble.";
             }
             case "Anular Fallo" -> {
-                boolean quitado = quitarUltimoFalloVisual();
+                boolean quitado = quitarUltimoFallo();
                 yield quitado
-                        ? "Se anuló tu último fallo marcado en el tablero."
+                        ? "Se anuló tu último fallo marcado y recuperaste los 5 puntos penalizados."
                         : "Comodín activado (no tenías fallos marcados, recibes +2 puntos compensatorios).";
             }
             case "Comodín Color" -> {
@@ -644,18 +695,21 @@ public class VentanaJuegoController {
         mostrarModalInstruccion("Comodín Activado", detalleActivacion);
     }
 
-    private boolean quitarUltimoFalloVisual() {
-        ToggleButton[] fallos = {fallo4, fallo3, fallo2, fallo1};
-        for (ToggleButton fallo : fallos) {
-            if (fallo != null && fallo.isSelected()) {
-                fallo.setSelected(false);
-                return true;
-            }
+    private boolean quitarUltimoFallo() {
+        if (jugador == null || jugador.getCarton() == null) {
+            return false;
+        }
+        int fallosActuales = jugador.getCarton().getFallos();
+        if (fallosActuales > 0) {
+            jugador.getCarton().setFallos(fallosActuales - 1);
+            actualizarFallos();
+            actualizarPuntajesCarton();
+            return true;
         }
         return false;
     }
 
-    // ==================== LÓGICA DE PARTIDA DE TU COMPAÑERA ====================
+    // ==================== TURNOS, FALLOS Y PUNTAJES ====================
 
     private boolean esApuestaGanadora(Apuesta apuesta, CasillaRuleta resultado) {
         if (apuesta == null || resultado == null || apuesta.getTipo() == null
@@ -674,6 +728,32 @@ public class VentanaJuegoController {
         };
     }
 
+    @FXML
+    private void confirmarGiro() {
+        if (giroConfirmado || ruletaGirando) {
+            return;
+        }
+        giroConfirmado = true;
+        pausarTemporizador();
+
+        // En Qwixx, si el jugador termina su turno sin marcar ninguna casilla, recibe 1 fallo
+        if (!casillaMarcadaEnTurno && jugador != null && jugador.getCarton() != null) {
+            gestorCarton.marcarFallo(jugador);
+            actualizarFallos();
+            actualizarPuntajesCarton();
+            if (finalizarPartidaSiCorresponde()) {
+                return;
+            }
+        }
+
+        gestorJugador.confirmarGiro(jugador);
+        if (confirmarGiroButton != null) {
+            confirmarGiroButton.setText("Turno de " + nombreBotRival + "...");
+            confirmarGiroButton.setDisable(true);
+        }
+        ejecutarTurnoBotRival();
+    }
+
     private void ejecutarTurnoBotRival() {
         if (botRival == null) {
             botRival = gestorPartida.configurarBot(dificultadBot);
@@ -684,46 +764,65 @@ public class VentanaJuegoController {
         if (botRival == null) {
             return;
         }
+
         pausarTemporizador();
+        ruletaGirando = true;
+        actualizarCasillasDisponibles(null);
+
         if (confirmarGiroButton != null) {
+            confirmarGiroButton.setText("Turno de " + nombreBotRival + "...");
             confirmarGiroButton.setDisable(true);
         }
-        gestorJugador.confirmarGiro(jugador);
-        gestorPartida.getPartida().setTurnoActual(botRival);
+
+        if (gestorPartida.getPartida() != null) {
+            gestorPartida.getPartida().setTurnoActual(botRival);
+        }
         if (indicadorTurno != null) {
             indicadorTurno.setTurno(false, nombreJugador, nombreBotRival);
         }
 
-        if (botRival instanceof MedioBot medioBot) {
-            medioBot.decidirUsoPowerUps();
-        } else if (botRival instanceof DificilBot dificilBot) {
-            dificilBot.decidirUsoPowerUps();
-        }
+        // Pausa visual para que el jugador vea claramente el intercambio de turno con el bot
+        PauseTransition pausaBot = new PauseTransition(Duration.seconds(1.2));
+        pausaBot.setOnFinished(ev -> {
+            if (botRival instanceof MedioBot medioBot) {
+                medioBot.decidirUsoPowerUps();
+            } else if (botRival instanceof DificilBot dificilBot) {
+                dificilBot.decidirUsoPowerUps();
+            }
 
-        CasillaRuleta resultadoActual = (ruleta != null) ? ruleta.getResultadoActual() : null;
-        botRival.ejecutarTurno(resultadoActual, gestorCarton, gestorRuleta.isComodinCeroActivo());
-        gestorJugador.confirmarGiro(botRival);
+            CasillaRuleta resultadoParaBot = (this.resultadoActual != null)
+                    ? this.resultadoActual
+                    : (ruleta != null ? ruleta.getResultadoActual() : gestorRuleta.girarRuleta());
 
-        if (finalizarPartidaSiCorresponde()) {
-            return;
-        }
+            botRival.ejecutarTurno(resultadoParaBot, gestorCarton, gestorRuleta.isComodinCeroActivo());
+            gestorJugador.confirmarGiro(botRival);
 
-        gestorPartida.verificarConfirmacionGiro();
-        gestorPartida.getPartida().setTurnoActual(jugador);
-        jugador.setGiroConfirmado(false);
-        botRival.setGiroConfirmado(false);
-        gestorPartida.getPartida().setGiroConfirmado(false);
-        this.numeroTurno++;
-        if (indicadorTurno != null) {
-            indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
-        }
-        girarRuleta(resultado -> {
-            this.resultadoActual = resultado;
-            this.casillaMarcadaEnTurno = false;
-            actualizarCasillasDisponibles(resultado);
-            reiniciarTemporizador();
-            iniciarTemporizador();
+            if (finalizarPartidaSiCorresponde()) {
+                return;
+            }
+
+            gestorPartida.verificarConfirmacionGiro();
+            if (gestorPartida.getPartida() != null) {
+                gestorPartida.getPartida().setTurnoActual(jugador);
+                gestorPartida.getPartida().setGiroConfirmado(false);
+            }
+            jugador.setGiroConfirmado(false);
+            botRival.setGiroConfirmado(false);
+            this.numeroTurno++;
+
+            if (indicadorTurno != null) {
+                indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
+            }
+
+            girarRuleta(resultado -> {
+                this.resultadoActual = resultado;
+                this.casillaMarcadaEnTurno = false;
+                actualizarCasillasDisponibles(resultado);
+                reiniciarTemporizador();
+                iniciarTemporizador();
+            });
         });
+        pausaBot.play();
     }
 
     private void finalizarYAbrirResultados() {
@@ -741,10 +840,9 @@ public class VentanaJuegoController {
         String nombreFinal = (jugadorPrincipal != null && jugadorPrincipal.getNombreUsuario() != null)
                 ? jugadorPrincipal.getNombreUsuario()
                 : nombreJugador;
-        int puntosFinales = (jugadorPrincipal != null) ? jugadorPrincipal.getSaldoPuntos() : 0;
-        if (doblePuntajeActivo) {
-            puntosFinales *= 2;
-        }
+        int puntosCarton = calcularPuntajeTotalCarton();
+        int saldoJugador = (jugadorPrincipal != null) ? jugadorPrincipal.getSaldoPuntos() : 0;
+        int puntosFinales = Math.max(0, puntosCarton) + saldoJugador;
 
         try {
             if (daoRegistro != null && nombreFinal != null && !nombreFinal.isBlank()) {
@@ -814,7 +912,6 @@ public class VentanaJuegoController {
     }
 
     private void mostrarResumenConIndicador(
-            IndicadorTurnoUI indicadorTurno,
             Apuesta apuestaInicial,
             String nombreComodin,
             Runnable alCerrar) {
@@ -839,9 +936,11 @@ public class VentanaJuegoController {
         titulo.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #191919;");
 
         Label detalle = new Label(
-                "Apuesta inicial: " + apuestaInicial.getMonto() + " pts a " + apuestaInicial.getPrediccion() +
+                "Tu rival es " + nombreBotRival + " (" + obtenerTextoDificultad(dificultadBot) + ")" +
+                        "\nApuesta inicial: " + apuestaInicial.getMonto() + " pts a " + apuestaInicial.getPrediccion() +
                         "\nComodín inicial otorgado: " + nombreComodin
         );
+        detalle.setTextAlignment(TextAlignment.CENTER);
         detalle.setStyle("-fx-font-size: 14px; -fx-text-fill: #333333;");
 
         Button btnAceptar = new Button("Continuar");
@@ -849,7 +948,7 @@ public class VentanaJuegoController {
         btnAceptar.setStyle("-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 14; -fx-cursor: hand;");
         btnAceptar.setOnAction(e -> dialog.close());
 
-        box.getChildren().addAll(titulo, indicadorTurno.getContenedor(), detalle, btnAceptar);
+        box.getChildren().addAll(titulo, detalle, btnAceptar);
 
         Scene scene = new Scene(box);
         scene.setFill(Color.TRANSPARENT);
@@ -1142,9 +1241,12 @@ public class VentanaJuegoController {
         scene.setFill(Color.TRANSPARENT);
         dialog.setScene(scene);
 
-        if (alCerrar != null) {
-            dialog.setOnHidden(event -> alCerrar.run());
+        if (alCerrar == null) {
+            dialog.showAndWait();
+            return;
         }
+
+        dialog.setOnHidden(event -> alCerrar.run());
         dialog.show();
         dialog.toFront();
         dialog.requestFocus();
@@ -1169,7 +1271,9 @@ public class VentanaJuegoController {
         CasillaRuleta resultado = gestorRuleta.girarRuleta();
         rotateTransition.setOnFinished(event -> {
             Platform.runLater(() -> {
+                actualizarUltimoResultado(resultado);
                 if (confirmarGiroButton != null) {
+                    confirmarGiroButton.setText("Confirmar giro");
                     confirmarGiroButton.setDisable(false);
                 }
                 mostrarModalResultadoRuleta(resultado, () -> {
@@ -1179,6 +1283,14 @@ public class VentanaJuegoController {
             });
         });
         rotateTransition.play();
+    }
+
+    private void actualizarUltimoResultado(CasillaRuleta resultado) {
+        if (ultimoResultadoLabel == null || resultado == null) {
+            return;
+        }
+        String color = resultado.getColor() == null ? "Sin color" : resultado.getColor().name();
+        ultimoResultadoLabel.setText("Último resultado: " + resultado.getValor() + " - " + color);
     }
 
     private void mostrarModalResultadoRuleta(CasillaRuleta resultado, Runnable alCerrar) {
@@ -1246,23 +1358,6 @@ public class VentanaJuegoController {
             case AMARILLO -> "#FBC02D";
             case AZUL -> "#1E88E5";
         };
-    }
-
-    @FXML
-    private void confirmarGiro() {
-        if (giroConfirmado) {
-            return;
-        }
-        if(!casillaMarcadaEnTurno){
-            gestorCarton.marcarFallo(jugador);
-        }
-        giroConfirmado = true;
-        gestorJugador.confirmarGiro(jugador);
-        if (confirmarGiroButton != null) {
-            confirmarGiroButton.setText("Giro confirmado");
-            confirmarGiroButton.setDisable(true);
-        }
-        ejecutarTurnoBotRival();
     }
 
     private void dibujarNumerosRuleta() {
@@ -1334,9 +1429,10 @@ public class VentanaJuegoController {
         }
         if (segundosRestantes == 0) {
             pausarTemporizador();
-            if (!jugador.isGiroConfirmado()) {
+            if (!jugador.isGiroConfirmado() && !casillaMarcadaEnTurno) {
                 gestorCarton.marcarFallo(jugador);
                 actualizarFallos();
+                actualizarPuntajesCarton();
             }
             if (finalizarPartidaSiCorresponde()) {
                 return;
@@ -1408,20 +1504,121 @@ public class VentanaJuegoController {
                     casillaMarcadaEnTurno = true;
                     gestorCarton.bloquearIzquierda(casilla.getValor(), fila);
                     actualizarCasillasDisponibles(resultadoActual);
+                    actualizarPuntajesCarton();
                 });
             }
         }
         actualizarCasillasDisponibles(resultadoActual);
+        actualizarPuntajesCarton();
     }
 
     private void actualizarFallos() {
+        if (jugador == null || jugador.getCarton() == null) {
+            return;
+        }
         int fallos = jugador.getCarton().getFallos();
         ToggleButton[] indicadores = {fallo1, fallo2, fallo3, fallo4};
         for (int i = 0; i < indicadores.length; i++) {
             if (indicadores[i] != null) {
-                indicadores[i].setSelected(i < fallos);
+                boolean marcado = i < fallos;
+                indicadores[i].setSelected(marcado);
+                if (marcado) {
+                    indicadores[i].setText("✕");
+                    indicadores[i].setStyle("-fx-background-color: #191919; -fx-text-fill: #FF5252; -fx-font-weight: bold; -fx-font-size: 16px;");
+                } else {
+                    indicadores[i].setText("");
+                    indicadores[i].setStyle("");
+                }
             }
         }
+    }
+
+    /**
+     * Calcula y actualiza los cuadros inferiores de puntaje por color, penalización por fallos y total.
+     */
+    private void actualizarPuntajesCarton() {
+        if (cartonJugador == null || cartonJugador.getFilas() == null) {
+            return;
+        }
+
+        int ptsRojo = 0;
+        int ptsAmarillo = 0;
+        int ptsVerde = 0;
+        int ptsAzul = 0;
+
+        for (FilaColor fila : cartonJugador.getFilas()) {
+            if (fila == null || fila.getColor() == null) {
+                continue;
+            }
+            int puntosFila = calcularPuntosFila(fila);
+            switch (fila.getColor()) {
+                case ROJO -> ptsRojo = puntosFila;
+                case AMARILLO -> ptsAmarillo = puntosFila;
+                case VERDE -> ptsVerde = puntosFila;
+                case AZUL -> ptsAzul = puntosFila;
+                default -> { }
+            }
+        }
+
+        int fallos = cartonJugador.getFallos();
+        int penalizacion = fallos * PUNTOS_POR_FALLO;
+        int total = (ptsRojo + ptsAmarillo + ptsVerde + ptsAzul) - penalizacion;
+        if (doblePuntajeActivo && total > 0) {
+            total *= 2;
+        }
+
+        if (puntosRojosLabel != null) {
+            puntosRojosLabel.setText(Integer.toString(ptsRojo));
+        }
+        if (puntosAmarillosLabel != null) {
+            puntosAmarillosLabel.setText(Integer.toString(ptsAmarillo));
+        }
+        if (puntosVerdesLabel != null) {
+            puntosVerdesLabel.setText(Integer.toString(ptsVerde));
+        }
+        if (puntosAzulesLabel != null) {
+            puntosAzulesLabel.setText(Integer.toString(ptsAzul));
+        }
+        if (penalizacionLabel != null) {
+            penalizacionLabel.setText(Integer.toString(penalizacion));
+        }
+        if (puntuacionTotalLabel != null) {
+            puntuacionTotalLabel.setText(Integer.toString(total));
+        }
+    }
+
+    private int calcularPuntosFila(FilaColor fila) {
+        CasillaCarton[] casillas = fila.getCasillas();
+        if (casillas == null) {
+            return 0;
+        }
+        int marcadas = 0;
+        for (int i = 0; i < casillas.length - 1; i++) {
+            if (casillas[i] != null && casillas[i].isMarcada()) {
+                marcadas++;
+            }
+        }
+        if (fila.isEstaBloqueadaGlobal() && marcadas > 0) {
+            marcadas++; // El candado cerrado cuenta como una marca adicional en Qwixx
+        }
+        return (marcadas * (marcadas + 1)) / 2;
+    }
+
+    private int calcularPuntajeTotalCarton() {
+        if (cartonJugador == null || cartonJugador.getFilas() == null) {
+            return 0;
+        }
+        int sumaColores = 0;
+        for (FilaColor fila : cartonJugador.getFilas()) {
+            if (fila != null) {
+                sumaColores += calcularPuntosFila(fila);
+            }
+        }
+        int total = sumaColores - (cartonJugador.getFallos() * PUNTOS_POR_FALLO);
+        if (doblePuntajeActivo && total > 0) {
+            total *= 2;
+        }
+        return total;
     }
 
     private boolean validarYMarcarCasilla(
@@ -1461,6 +1658,7 @@ public class VentanaJuegoController {
         }
         if (gestorCarton.validarCierreCandado(fila)) {
             actualizarCasillasDisponibles(resultadoActual);
+            actualizarPuntajesCarton();
             finalizarPartidaSiCorresponde();
         }
     }
@@ -1555,7 +1753,13 @@ public class VentanaJuegoController {
 
         boolean filasCompletadas = gestorPartida.evaluarCondicionFin();
         boolean deudaSuperada = false;
-        boolean fallosCompletados = false;
+        boolean fallosJugadorCompletados = jugador != null
+                && jugador.getCarton() != null
+                && jugador.getCarton().getFallos() >= MAX_FALLOS;
+        boolean fallosBotCompletados = botRival != null
+                && botRival.getCarton() != null
+                && botRival.getCarton().getFallos() >= MAX_FALLOS;
+
         Jugador[] jugadores = partida.getJugadores();
         if (jugadores != null) {
             for (Jugador participante : jugadores) {
@@ -1563,12 +1767,15 @@ public class VentanaJuegoController {
                     continue;
                 }
                 deudaSuperada |= participante.getEnDeuda() >= UMBRAL_DEUDA;
-                fallosCompletados |= participante.getCarton().getFallos()
-                        >= participante.getCarton().getCasillasFallos();
+                if (participante == jugador) {
+                    fallosJugadorCompletados |= participante.getCarton().getFallos() >= MAX_FALLOS;
+                } else {
+                    fallosBotCompletados |= participante.getCarton().getFallos() >= MAX_FALLOS;
+                }
             }
         }
 
-        if (!filasCompletadas && !deudaSuperada && !fallosCompletados) {
+        if (!filasCompletadas && !deudaSuperada && !fallosJugadorCompletados && !fallosBotCompletados) {
             return false;
         }
 
@@ -1578,12 +1785,17 @@ public class VentanaJuegoController {
         partida.setEstado(EstadoPartida.FINALIZADA);
         pausarTemporizador();
 
-        if (deudaSuperada || fallosCompletados) {
-            String motivo = deudaSuperada
-                    ? "Se alcanzó el umbral de deuda de " + UMBRAL_DEUDA + " puntos."
-                    : "Se completaron los fallos permitidos.";
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Partida finalizada", motivo);
+        if (fallosJugadorCompletados) {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Partida perdida",
+                    "Has acumulado " + MAX_FALLOS + " fallos. ¡Has perdido la partida!");
+        } else if (fallosBotCompletados) {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "¡Ganaste la partida!",
+                    nombreBotRival + " acumuló " + MAX_FALLOS + " fallos.");
+        } else if (deudaSuperada) {
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Partida finalizada",
+                    "Se alcanzó el umbral de deuda =) de " + UMBRAL_DEUDA + " puntos.");
         }
+
         finalizarYAbrirResultados();
         return true;
     }

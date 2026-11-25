@@ -96,6 +96,14 @@
                 onAction="#confirmarGiro"
                 AnchorPane.topAnchor="630.0"
                 AnchorPane.leftAnchor="728.0"/>
+        <Label fx:id="ultimoResultadoLabel"
+               alignment="CENTER"
+               prefHeight="42.0"
+               styleClass="roulette-last-result"
+               text="Último resultado: pendiente"
+               AnchorPane.leftAnchor="530.0"
+               AnchorPane.rightAnchor="530.0"
+               AnchorPane.topAnchor="700.0"/>
         <!-- TEMPORIZADOR -->
         <AnchorPane fx:id="temporizadorPane" prefHeight="220.0" prefWidth="340.0" styleClass="timer-panel" AnchorPane.leftAnchor="136.0" AnchorPane.topAnchor="751.0">
 

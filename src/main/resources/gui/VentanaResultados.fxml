@@ -72,13 +72,13 @@
                         <!-- MEDALLAS: delante de las tarjetas -->
                         <ImageView fx:id="medallaPlataView" fitHeight="183.0" fitWidth="183.0" layoutX="60.0" layoutY="240.0" mouseTransparent="true" preserveRatio="true" smooth="true">
                             <image>
-                                <Image url="@img/puesto_1.png" />
+                                <Image url="@img/puesto_2.png" />
                             </image>
                         </ImageView>
 
                         <ImageView fx:id="medallaOroView" fitHeight="183.0" fitWidth="183.0" layoutX="360.0" layoutY="143.0" mouseTransparent="true" preserveRatio="true" smooth="true">
                             <image>
-                                <Image url="@img/puesto_2.png" />
+                                <Image url="@img/puesto_1.png" />
                             </image>
                         </ImageView>
 
