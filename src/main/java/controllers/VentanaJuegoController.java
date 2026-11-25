@@ -1247,6 +1247,9 @@ public class VentanaJuegoController {
         if (giroConfirmado) {
             return;
         }
+        if(!casillaMarcadaEnTurno){
+            gestorCarton.marcarFallo(jugador);
+        }
         giroConfirmado = true;
         gestorJugador.confirmarGiro(jugador);
         if (confirmarGiroButton != null) {
