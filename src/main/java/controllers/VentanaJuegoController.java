@@ -1,15 +1,12 @@
 package controllers;
 
 import datos.*;
-<<<<<<< HEAD
 import datos.carton.Carton;
 import datos.carton.CasillaCarton;
 import datos.carton.FilaColor;
-=======
 import datos.bot.Bot;
 import datos.bot.DificilBot;
 import datos.bot.MedioBot;
->>>>>>> da3df3e1135e084ab984e41b905f31cdbb212811
 import gestion.*;
 import gui.IndicadorTurnoUI;
 import gui.Launcher;
@@ -59,7 +56,6 @@ public class VentanaJuegoController {
     private final ImpOperacionesRegistro impOperacionesRegistro = new ImpOperacionesRegistro();
     @FXML private Button instruccionesButton;
     @FXML private Button finalizarButton;
-    @FXML private Label temporizadorLabel;
     @FXML private Label puntosRojosLabel;
     @FXML private Label puntosAmarillosLabel;
     @FXML private Label puntosVerdesLabel;

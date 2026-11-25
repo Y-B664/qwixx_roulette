@@ -27,8 +27,7 @@ public class GestorPartida {
         this.gestorTemporizador = gestorTemporizador;
     }
 
-    public Partida iniciarPartida(int numeroJugadores) {
-        Jugador jugador = gestorJugador.crearJugador("Mario", new Stack<>(), gestorCarton.crearCarton(4));
+    public Partida iniciarPartida(int numeroJugadores,Jugador jugador) {
         jugador.setSaldoPuntos(5);
         this.partida = new Partida(0, false, jugador, 60,numeroJugadores);
         return this.partida;
