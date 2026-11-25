@@ -1767,7 +1767,7 @@ public class VentanaJuegoController {
                     nombreBotRival + " acumuló " + MAX_FALLOS + " fallos.");
         } else if (deudaSuperada) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Partida finalizada",
-                    "Se alcanzó el umbral de deuda de " + UMBRAL_DEUDA + " puntos.");
+                    "Se alcanzó el umbral de deuda =) de " + UMBRAL_DEUDA + " puntos.");
         }
 
         finalizarYAbrirResultados();
