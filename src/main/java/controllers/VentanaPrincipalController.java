@@ -82,7 +82,7 @@ public class VentanaPrincipalController {
         String reglas = """
 - Inicias con 5 puntos de casino y debes hacer una apuesta inicial obligatoria antes de girar la ruleta.
 - Además recibes 1 comodín aleatorio gratis al comenzar.
-- La ruleta (0-36) determina el color y el número a tachar de izquierda a derecha en tu cartón.
+- La ruleta (0-12) determina el color y el número a tachar de izquierda a derecha en tu cartón.
 - Si sacas 0 Verde, puedes tachar cualquier casilla libre de cualquier fila.
 - Si no puedes o no quieres tachar, sumas 1 fallo (-5 pts cada uno; al 4.º fallo termina la partida).
 - También termina cuando se cierran 2 filas (requiere mínimo 5 cruces en la fila para cerrar su candado).

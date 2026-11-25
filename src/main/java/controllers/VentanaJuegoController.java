@@ -987,7 +987,7 @@ public class VentanaJuegoController {
         ToggleGroup grupoTipo = new ToggleGroup();
         ToggleButton btnTipoColor = new ToggleButton("COLOR (x2)");
         ToggleButton btnTipoParidad = new ToggleButton("PAR / IMPAR (x2)");
-        ToggleButton btnTipoNumero = new ToggleButton("NÚMERO 0-36 (x10)");
+        ToggleButton btnTipoNumero = new ToggleButton("NÚMERO 0-12 (x10)");
         btnTipoColor.setToggleGroup(grupoTipo);
         btnTipoParidad.setToggleGroup(grupoTipo);
         btnTipoNumero.setToggleGroup(grupoTipo);
@@ -1030,7 +1030,7 @@ public class VentanaJuegoController {
         boxParidad.setVisible(false);
 
         TextField txtNumero = new TextField();
-        txtNumero.setPromptText("Número del 0 al 36");
+        txtNumero.setPromptText("Número del 0 al 12");
         txtNumero.setMaxWidth(220);
         txtNumero.setAlignment(Pos.CENTER);
         txtNumero.setStyle("-fx-font-size: 16px; -fx-background-radius: 14; -fx-border-color: #191919; -fx-border-width: 2; -fx-border-radius: 14; -fx-padding: 8;");
@@ -1103,7 +1103,7 @@ public class VentanaJuegoController {
             String predTexto = esColor ? (rojoSel ? "ROJO" : "NEGRO")
                     : esParidad ? (parSel ? "PAR" : "IMPAR")
                     : (txtNumero.getText().trim().isEmpty()
-                    ? "NÚMERO (0-36)" : "#" + txtNumero.getText().trim());
+                    ? "NÚMERO (0-12)" : "#" + txtNumero.getText().trim());
             String multTexto = esNumero ? "x10" : "x2";
             lblResumen.setText("Seleccionado: " + predTexto + " • " + montoActual + " pt(s) (" + multTexto + ")");
         };
@@ -1158,7 +1158,7 @@ public class VentanaJuegoController {
             Apuesta candidata = new Apuesta(tipo, monto, prediccion);
             if (!gestorApuesta.validarApuesta(candidata)) {
                 mostrarAlerta(Alert.AlertType.ERROR, "Apuesta inválida",
-                        "Ingresa un número válido entre 0 y 36.");
+                        "Ingresa un número válido entre 0 y 12.");
                 return;
             }
             resultado[0] = candidata;
