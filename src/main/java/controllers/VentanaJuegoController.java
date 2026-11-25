@@ -1,12 +1,12 @@
 package controllers;
 
 import datos.*;
-import datos.carton.Carton;
-import datos.carton.CasillaCarton;
-import datos.carton.FilaColor;
 import datos.bot.Bot;
 import datos.bot.DificilBot;
 import datos.bot.MedioBot;
+import datos.carton.Carton;
+import datos.carton.CasillaCarton;
+import datos.carton.FilaColor;
 import gestion.*;
 import gui.IndicadorTurnoUI;
 import gui.Launcher;
@@ -34,9 +34,9 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 import operacionesBD.GenericDAO;
 
-import java.util.EnumMap;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -250,8 +250,10 @@ public class VentanaJuegoController {
         }
         jugador = gestorJugador.crearJugador(nombreJugador, new Stack<>(), gestorCarton.crearCarton(4));
         cartonJugador = jugador.getCarton();
+        ponerFilasCarton();
+
         Partida partida = gestorPartida.iniciarPartida(2, jugador);
-        inicializarTemporizador(partida.getTiempoPorTurnoSegundos());
+        inicializarTemporizador(partida != null ? partida.getTiempoPorTurnoSegundos() : 60);
         if (partida != null
                 && partida.getJugadores() != null
                 && partida.getJugadores().length > 0) {
@@ -337,7 +339,7 @@ public class VentanaJuegoController {
                             "Fallos: Si se agota el tiempo antes de completar tu turno, recibirás un fallo. ¡Ten cuidado! Al acumular 4 fallos, perderás la partida.\n" +
                             "Acciones disponibles: Durante tu turno podrás realizar las acciones permitidas por el juego para avanzar y alcanzar tu objetivo.\n" +
                             "Comodines: Al inicio recibirás un comodin de manera aleatoria.\n" +
-                            "Pulsa «Aceptar» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
+                            "Pulsa «Entendido» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
                             "\n" +
                             "¡Mucha suerte!";
                     mostrarModalInstruccion("¡Comienza tu turno!", instruccion, this::iniciarTemporizador);
@@ -356,6 +358,7 @@ public class VentanaJuegoController {
             return;
         }
         int cantidad = gestorStack.obtenerDisponibles(jugador.getMazoPowerUps()).size();
+        powerUpsButton.setStyle("-fx-font-size: 20px;");
         powerUpsButton.setText("PowerUps (" + cantidad + ")");
     }
 
@@ -498,6 +501,8 @@ public class VentanaJuegoController {
             return;
         }
 
+        final PowerUp[] powerUpSeleccionado = {null};
+
         Stage modal = new Stage();
         if (juegoRoot.getScene() != null && juegoRoot.getScene().getWindow() != null) {
             modal.initOwner(juegoRoot.getScene().getWindow());
@@ -559,8 +564,8 @@ public class VentanaJuegoController {
                 btnUsar.setPrefSize(110, 38);
                 btnUsar.setStyle("-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 12; -fx-cursor: hand;");
                 btnUsar.setOnAction(ev -> {
+                    powerUpSeleccionado[0] = powerUp;
                     modal.close();
-                    activarPowerUpJugador(powerUp);
                 });
 
                 fila.getChildren().addAll(textos, btnUsar);
@@ -579,6 +584,11 @@ public class VentanaJuegoController {
         scene.setFill(Color.TRANSPARENT);
         modal.setScene(scene);
         modal.showAndWait();
+
+        // Se activa después de que el modal anterior cerró por completo para evitar congelamiento
+        if (powerUpSeleccionado[0] != null) {
+            activarPowerUpJugador(powerUpSeleccionado[0]);
+        }
     }
 
     private void activarPowerUpJugador(PowerUp powerUp) {
@@ -1142,12 +1152,13 @@ public class VentanaJuegoController {
         Scene scene = new Scene(contenido);
         scene.setFill(Color.TRANSPARENT);
         dialog.setScene(scene);
-        if (alCerrar == null) {
-            dialog.showAndWait();
-        } else {
+
+        if (alCerrar != null) {
             dialog.setOnHidden(event -> alCerrar.run());
-            dialog.show();
         }
+        dialog.show();
+        dialog.toFront();
+        dialog.requestFocus();
     }
 
     private void girarRuleta(Consumer<CasillaRuleta> alFinalizar) {
@@ -1167,7 +1178,9 @@ public class VentanaJuegoController {
         this.resultadoActual = resultado;
         rotateTransition.setOnFinished(event -> {
             Platform.runLater(() -> {
-                confirmarGiroButton.setDisable(false);
+                if (confirmarGiroButton != null) {
+                    confirmarGiroButton.setDisable(false);
+                }
                 mostrarModalResultadoRuleta(resultado, () -> alFinalizar.accept(resultado));
             });
         });
@@ -1240,6 +1253,7 @@ public class VentanaJuegoController {
             case AZUL -> "#1E88E5";
         };
     }
+
     @FXML
     private void confirmarGiro() {
         if (giroConfirmado) {
@@ -1253,6 +1267,7 @@ public class VentanaJuegoController {
         }
         ejecutarTurnoBotRival();
     }
+
     private void dibujarNumerosRuleta() {
         if (ruleta == null || ruletaGroup == null) {
             return;
@@ -1368,10 +1383,15 @@ public class VentanaJuegoController {
     }
 
     public void actualizarSaldoJugador() {
-        saldoJugadorLabel.setText("Saldo: " + jugador.getSaldoPuntos() + " puntos");
+        if (saldoJugadorLabel != null && jugador != null) {
+            saldoJugadorLabel.setText("Saldo: " + jugador.getSaldoPuntos() + " puntos");
+        }
     }
 
     private void ponerFilasCarton() {
+        if (cartonJugador == null) {
+            return;
+        }
         Map<datos.Color, HBox> vistas = new EnumMap<>(datos.Color.class);
         vistas.put(datos.Color.ROJO, filaRoja);
         vistas.put(datos.Color.AMARILLO, filaAmarilla);
@@ -1381,13 +1401,16 @@ public class VentanaJuegoController {
         for (FilaColor fila : cartonJugador.getFilas()) {
             HBox vista = vistas.get(fila.getColor());
             CasillaCarton[] casillas = fila.getCasillas();
-
-            if (vista == null || vista.getChildren().size() != casillas.length) {
-                throw new IllegalStateException("La fila del FXML no coincide con el cartón.");
+            if (vista == null || casillas == null) {
+                continue;
             }
 
-            for (int i = 0; i < casillas.length - 1; i++) {
-                Button boton = (Button) vista.getChildren().get(i);
+            int limite = Math.min(casillas.length, vista.getChildren().size() - 1);
+            for (int i = 0; i < limite; i++) {
+                Node nodo = vista.getChildren().get(i);
+                if (!(nodo instanceof Button boton)) {
+                    continue;
+                }
                 CasillaCarton casilla = casillas[i];
                 boton.setText(Integer.toString(casilla.getValor()));
 
@@ -1408,6 +1431,7 @@ public class VentanaJuegoController {
             }
         }
     }
+
     private void actualizarFallos() {
         int fallos = jugador.getCarton().getFallos();
         ToggleButton[] indicadores = {fallo1, fallo2, fallo3, fallo4};
@@ -1417,5 +1441,4 @@ public class VentanaJuegoController {
             }
         }
     }
-
 }
