@@ -171,7 +171,7 @@ public class VentanaJuegoController {
     @FXML
     public void initialize() {
         agregarBotonVolver();
-
+        deshabilitarSeleccionFallos();
         if (instruccionesButton != null) {
             instruccionesButton.setOnAction(e -> mostrarModalInstruccion(
                     "Instrucciones",
@@ -1414,6 +1414,14 @@ public class VentanaJuegoController {
         for (int i = 0; i < indicadores.length; i++) {
             if (indicadores[i] != null) {
                 indicadores[i].setSelected(i < fallos);
+            }
+        }
+    }
+    private void deshabilitarSeleccionFallos() {
+        ToggleButton[] indicadores = {fallo1, fallo2, fallo3, fallo4};
+        for (ToggleButton indicador : indicadores) {
+            if (indicador != null) {
+                indicador.setDisable(true);
             }
         }
     }
