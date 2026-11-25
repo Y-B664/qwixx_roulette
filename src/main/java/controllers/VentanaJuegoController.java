@@ -66,6 +66,7 @@ public class VentanaJuegoController {
     @FXML private ToggleButton fallo2;
     @FXML private ToggleButton fallo3;
     @FXML private ToggleButton fallo4;
+    @FXML private VBox fallosPane;
 
     private final GenericDAO<Registro> daoRegistro;
     private final GestorRuleta gestorRuleta = new GestorRuleta();
@@ -357,6 +358,12 @@ public class VentanaJuegoController {
         if (botRival == null) {
             return;
         }
+        pausarTemporizador();
+        if (confirmarGiroButton != null) {
+            confirmarGiroButton.setDisable(true);
+        }
+        gestorJugador.confirmarGiro(jugador);
+        gestorPartida.getPartida().setTurnoActual(botRival);
         if (indicadorTurno != null) {
             indicadorTurno.setTurno(false, nombreJugador, nombreBotRival);
         }
@@ -369,17 +376,30 @@ public class VentanaJuegoController {
 
         CasillaRuleta resultadoActual = (ruleta != null) ? ruleta.getResultadoActual() : null;
         botRival.ejecutarTurno(resultadoActual, gestorCarton, gestorRuleta.isComodinCeroActivo());
-
+        gestorJugador.confirmarGiro(botRival);
         if (gestorPartida.evaluarCondicionFin()) {
             gestorPartida.finalizarPartida();
             finalizarYAbrirResultados();
             return;
         }
 
+        gestorPartida.verificarConfirmacionGiro();
+        gestorPartida.getPartida().setTurnoActual(jugador);
+        jugador.setGiroConfirmado(false);
+        botRival.setGiroConfirmado(false);
+        gestorPartida.getPartida().setGiroConfirmado(false);
         this.numeroTurno++;
         if (indicadorTurno != null) {
-            indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
+            indicadorTurno.setTurno(false, nombreJugador, nombreBotRival);
         }
+        girarRuleta(resultado -> {
+            this.resultadoActual = resultado;
+            if (indicadorTurno != null) {
+                indicadorTurno.setTurno(true, nombreJugador, nombreBotRival);
+            }
+            reiniciarTemporizador();
+            iniciarTemporizador();
+        });
     }
 
     private void finalizarYAbrirResultados() {
@@ -891,7 +911,11 @@ public class VentanaJuegoController {
 
     @FXML
     private void confirmarGiro() {
+        if (giroConfirmado) {
+            return;
+        }
         giroConfirmado = true;
+        gestorJugador.confirmarGiro(jugador);
         if (confirmarGiroButton != null) {
             confirmarGiroButton.setText("Giro confirmado");
             confirmarGiroButton.setDisable(true);
@@ -968,8 +992,23 @@ public class VentanaJuegoController {
             pausarTemporizador();
             if(!jugador.isGiroConfirmado()){
                 gestorCarton.marcarFallo(jugador);
+                actualizarFallos();
             }
+            giroConfirmado = false;
+            if (confirmarGiroButton != null) {
+                confirmarGiroButton.setDisable(true);
+            }
+            ejecutarTurnoBotRival();
 
+        }
+    }
+    private void actualizarFallos() {
+        int fallos = jugador.getCarton().getFallos();
+        for (int i = 0; i < fallos; i++) {
+            Node node = fallosPane.getChildren().get(i);
+            if (node instanceof ToggleButton boton) {
+                boton.setSelected(true);
+            }
         }
     }
     private void pausarTemporizador(){
