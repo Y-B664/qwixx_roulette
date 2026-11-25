@@ -251,13 +251,13 @@ public class VentanaJuegoController {
                     "Una vez realizada tu apuesta, estarás listo para continuar con el juego.";
             mostrarModalInstruccion("Puntos iniciales", instruccion);
         }
-        jugador = gestorJugador.crearJugador(nombreJugador,new Stack<>(),gestorCarton.crearCarton(4));
+        jugador = gestorJugador.crearJugador(nombreJugador, new Stack<>(), gestorCarton.crearCarton(4));
         cartonJugador = jugador.getCarton();
         ponerFilasCarton();
-        Partida partida = gestorPartida.iniciarPartida(2,jugador);
-        inicializarTemporizador(partida.getTiempoPorTurnoSegundos());
 
-        Partida partidaActual = gestorPartida.iniciarPartida(2,jugador);
+        Partida partidaActual = gestorPartida.iniciarPartida(2, jugador);
+        inicializarTemporizador(partidaActual != null ? partidaActual.getTiempoPorTurnoSegundos() : 60);
+
         if (partidaActual != null && partidaActual.getJugadores() != null && partidaActual.getJugadores().length > 0) {
             Jugador jugadorPrincipal = partidaActual.getJugadores()[0];
             if (jugadorPrincipal != null) {
@@ -276,15 +276,17 @@ public class VentanaJuegoController {
         ruleta = gestorRuleta.construirRuleta();
         dibujarNumerosRuleta();
 
+        // Entrega del comodín inicial al jugador y al bot
         List<PowerUp> ofertaTienda = gestorTienda.generarOfertaAleatoria();
-        PowerUp comodinInicial = ofertaTienda.isEmpty() ? null : ofertaTienda.get(0);
-        if (comodinInicial != null && this.botRival != null) {
-            @SuppressWarnings("unchecked")
-            Stack<Object> mazoBot = this.botRival.getMazoPowerUps();
-            if (mazoBot != null) {
-                mazoBot.push(comodinInicial);
+        PowerUp comodinInicial = ofertaTienda.isEmpty() ? null : ofertaTienda.get(0).clonarDisponible();
+        if (comodinInicial != null) {
+            gestorStack.agregarPowerUp(jugador.getMazoPowerUps(), comodinInicial);
+            if (this.botRival != null && this.botRival.getMazoPowerUps() != null) {
+                gestorStack.agregarPowerUp(this.botRival.getMazoPowerUps(), comodinInicial.clonarDisponible());
             }
         }
+        gestorTienda.generarOfertaAleatoria();
+        actualizarBotonPowerUps();
 
         Apuesta apuestaInicial = solicitarApuestaInicialJavaFX();
         if (apuestaInicial == null) {
@@ -341,7 +343,7 @@ public class VentanaJuegoController {
                             "Fallos: Si se agota el tiempo antes de completar tu turno, recibirás un fallo. ¡Ten cuidado! Al acumular 4 fallos, perderás la partida.\n" +
                             "Acciones disponibles: Durante tu turno podrás realizar las acciones permitidas por el juego para avanzar y alcanzar tu objetivo.\n" +
                             "Comodines: Al inicio recibirás un comodin de manera aleatoria.\n" +
-                            "Pulsa «Aceptar» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
+                            "Pulsa «Entendido» para cerrar esta ventana e iniciar tu temporizador de 1 minuto.\n" +
                             "\n" +
                             "¡Mucha suerte!";
                     mostrarModalInstruccion("¡Comienza tu turno!", instruccion, this::iniciarTemporizador);
@@ -619,10 +621,12 @@ public class VentanaJuegoController {
             }
             case "Comodín Color" -> {
                 this.comodinColorActivo = true;
+                actualizarCasillasDisponibles(resultadoActual);
                 yield "Comodín Color activo: ahora puedes marcar cualquier casilla libre de cualquier fila.";
             }
             case "Salto Izquierda" -> {
                 this.saltoIzquierdaActivo = true;
+                actualizarCasillasDisponibles(resultadoActual);
                 yield "Salto Izquierda activo: puedes marcar una casilla a la izquierda de tus marcas actuales.";
             }
             case "Seguro de Apuesta" -> {
@@ -1146,7 +1150,7 @@ public class VentanaJuegoController {
         dialog.requestFocus();
     }
 
-    private void girarRuleta(Consumer<CasillaRuleta> alFinalizar){
+    private void girarRuleta(Consumer<CasillaRuleta> alFinalizar) {
         giroConfirmado = false;
         ruletaGirando = true;
         resultadoActual = null;
@@ -1165,7 +1169,9 @@ public class VentanaJuegoController {
         CasillaRuleta resultado = gestorRuleta.girarRuleta();
         rotateTransition.setOnFinished(event -> {
             Platform.runLater(() -> {
-                confirmarGiroButton.setDisable(false);
+                if (confirmarGiroButton != null) {
+                    confirmarGiroButton.setDisable(false);
+                }
                 mostrarModalResultadoRuleta(resultado, () -> {
                     ruletaGirando = false;
                     alFinalizar.accept(resultado);
@@ -1318,14 +1324,14 @@ public class VentanaJuegoController {
         temporizadorLabel.setText(darFormatoTiempo(segundosRestantes));
     }
 
-    private void actualizarTemporizador(){
-        if(segundosRestantes > 0){
+    private void actualizarTemporizador() {
+        if (segundosRestantes > 0) {
             segundosRestantes--;
             actualizarUI();
         }
         if (segundosRestantes == 0) {
             pausarTemporizador();
-            if(!jugador.isGiroConfirmado()){
+            if (!jugador.isGiroConfirmado()) {
                 gestorCarton.marcarFallo(jugador);
                 actualizarFallos();
             }
@@ -1362,6 +1368,7 @@ public class VentanaJuegoController {
             saldoJugadorLabel.setText("Saldo: " + jugador.getSaldoPuntos() + " puntos");
         }
     }
+
     private Map<datos.Color, HBox> obtenerVistasFilasCarton() {
         Map<datos.Color, HBox> vistas = new EnumMap<>(datos.Color.class);
         vistas.put(datos.Color.ROJO, filaRoja);
@@ -1370,6 +1377,7 @@ public class VentanaJuegoController {
         vistas.put(datos.Color.AZUL, filaAzul);
         return vistas;
     }
+
     private void ponerFilasCarton() {
         Map<datos.Color, HBox> vistas = obtenerVistasFilasCarton();
 
@@ -1412,6 +1420,7 @@ public class VentanaJuegoController {
             }
         }
     }
+
     private boolean validarYMarcarCasilla(
             FilaColor fila,
             CasillaCarton casilla,
@@ -1420,16 +1429,23 @@ public class VentanaJuegoController {
             return false;
         }
         boolean esCeroVerde = resultado.getValor() == 0 && resultado.getColor() == datos.Color.VERDE;
-        if (!esCeroVerde) {
-            return gestorCarton.validarMarcacion(fila, casilla, resultado);
+        if (esCeroVerde || comodinColorActivo || saltoIzquierdaActivo) {
+            if (fila == null || casilla == null || fila.isEstaBloqueadaGlobal() || casilla.isMarcada()) {
+                return false;
+            }
+            if (!saltoIzquierdaActivo && casilla.isBloqueada()) {
+                return false;
+            }
+            casilla.setMarcada(true);
+            casilla.setBloqueada(false);
+            comodinColorActivo = false;
+            saltoIzquierdaActivo = false;
+            return true;
         }
-        if (fila == null || casilla == null || fila.isEstaBloqueadaGlobal()
-                || casilla.isMarcada() || casilla.isBloqueada()) {
-            return false;
-        }
-        casilla.setMarcada(true);
-        return true;
-    }private void intentarCerrarFila(FilaColor fila) {
+        return gestorCarton.validarMarcacion(fila, casilla, resultado);
+    }
+
+    private void intentarCerrarFila(FilaColor fila) {
         if (fila == null || fila.isEstaBloqueadaGlobal()) {
             return;
         }
@@ -1445,6 +1461,7 @@ public class VentanaJuegoController {
             finalizarPartidaSiCorresponde();
         }
     }
+
     private void actualizarEstilosFila(FilaColor fila, HBox vista, CasillaCarton[] casillas) {
         if (fila == null || vista == null || casillas == null) {
             return;
@@ -1489,6 +1506,7 @@ public class VentanaJuegoController {
         }
         return numerosMarcados >= 5 && casillaFinalMarcada;
     }
+
     private void actualizarCasillasDisponibles(CasillaRuleta resultado) {
         if (cartonJugador == null || cartonJugador.getFilas() == null) {
             return;
@@ -1516,6 +1534,8 @@ public class VentanaJuegoController {
 
             actualizarEstilosFila(fila, vista, casillas);
             boolean colorPermitido = esCeroVerde
+                    || comodinColorActivo
+                    || saltoIzquierdaActivo
                     || (resultado.getColor() == datos.Color.NEGRO
                     && (fila.getColor() == datos.Color.AMARILLO || fila.getColor() == datos.Color.VERDE))
                     || (resultado.getColor() == datos.Color.ROJO
@@ -1523,6 +1543,7 @@ public class VentanaJuegoController {
             vista.setDisable(ruletaGirando || !colorPermitido || fila.isEstaBloqueadaGlobal());
         }
     }
+
     private boolean finalizarPartidaSiCorresponde() {
         Partida partida = gestorPartida.getPartida();
         if (partida == null || partida.getEstado() != EstadoPartida.EN_CURSO) {
@@ -1563,5 +1584,4 @@ public class VentanaJuegoController {
         finalizarYAbrirResultados();
         return true;
     }
-
 }
