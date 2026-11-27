@@ -32,6 +32,9 @@ public class GestorTienda {
                 "DISPONIBLE", 4));
         catalogo.add(new PowerUp("Seguro de Apuesta",
                 "Recupera +3 puntos de casino y blinda tu siguiente apuesta.",
+                "DISPONIBLE", 3));
+        catalogo.add(new PowerUp("Apuesta",
+                "Tienes la oportunidad de realizar una apuesta.",
                 "DISPONIBLE", 2));
         this.tienda.getCatalogoGlobal().setPowerUps(catalogo);
     }

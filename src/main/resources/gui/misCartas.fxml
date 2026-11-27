@@ -167,6 +167,27 @@
 
             <Button fx:id="usarPuntosButton" styleClass="card-action, outline-button" text="Usar carta" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
         </AnchorPane>
+        <!-- APUESTA -->
+        <AnchorPane fx:id="apuestaCard" styleClass="power-card, card-gold" GridPane.columnIndex="2" GridPane.rowIndex="1">
+
+            <StackPane prefHeight="72.0" prefWidth="72.0" styleClass="icon-tile, tint-gold" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="28.0">
+                <fx:include source="iconos/puntos.fxml" />
+            </StackPane>
+
+            <Label prefHeight="44.0" styleClass="card-title" text="Apuesta" AnchorPane.leftAnchor="120.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="28.0" />
+
+            <Label styleClass="card-category" text="PUNTOS" AnchorPane.leftAnchor="120.0" AnchorPane.topAnchor="74.0" />
+
+            <Label alignment="TOP_LEFT" prefHeight="72.0" styleClass="card-description" text="Tienes la oportunidad de hacer otra apuesta." wrapText="true" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="116.0" />
+
+            <Region prefHeight="1.0" styleClass="card-divider" AnchorPane.leftAnchor="28.0" AnchorPane.rightAnchor="28.0" AnchorPane.topAnchor="204.0" />
+
+            <Label fx:id="cantidadApuestaLabel" styleClass="quantity, tint-gold" text="×1" AnchorPane.leftAnchor="28.0" AnchorPane.topAnchor="221.0" />
+
+            <Label styleClass="stock-caption" text="en mano" wrapText="true" AnchorPane.leftAnchor="116.0" AnchorPane.topAnchor="221.0" />
+
+            <Button fx:id="usarApuestaButton" styleClass="card-action, outline-button" text="Usar carta" AnchorPane.bottomAnchor="31.0" AnchorPane.rightAnchor="28.0" />
+        </AnchorPane>
 
     </GridPane>
 

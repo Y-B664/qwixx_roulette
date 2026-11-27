@@ -16,8 +16,9 @@
 <?import javafx.scene.shape.Arc?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane fx:id="juegoRoot" minHeight="1811.0" minWidth="1756.0" prefHeight="1811.0" prefWidth="1756.0" styleClass="game-screen" stylesheets="@ventanaJuego.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VentanaJuegoController">
+<AnchorPane fx:id="juegoRoot" minHeight="1811.0" minWidth="1756.0" prefHeight="1811.0" prefWidth="1756.0" styleClass="game-screen" stylesheets="@ventanaJuego.css" xmlns="http://javafx.com/javafx/27.0.1.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.VentanaJuegoController">
 
 
     <children>
@@ -86,24 +87,6 @@
 
         <Button fx:id="finalizarButton" mnemonicParsing="false" prefHeight="76.0" prefWidth="475.0" styleClass="dark-button" text="Finalizar partida" AnchorPane.rightAnchor="32.0" AnchorPane.topAnchor="53.0" />
         <Label fx:id="saldoJugadorLabel" styleClass="balance-label" text="" AnchorPane.rightAnchor="32.0" AnchorPane.topAnchor="155.0" />
-        <Button fx:id="confirmarGiroButton"
-                text="Confirmar giro"
-                mnemonicParsing="false"
-                prefWidth="300.0"
-                prefHeight="64.0"
-                styleClass="dark-button"
-                disable="true"
-                onAction="#confirmarGiro"
-                AnchorPane.topAnchor="630.0"
-                AnchorPane.leftAnchor="728.0"/>
-        <Label fx:id="ultimoResultadoLabel"
-               alignment="CENTER"
-               prefHeight="42.0"
-               styleClass="roulette-last-result"
-               text="Último resultado: pendiente"
-               AnchorPane.leftAnchor="530.0"
-               AnchorPane.rightAnchor="530.0"
-               AnchorPane.topAnchor="700.0"/>
         <!-- TEMPORIZADOR -->
         <AnchorPane fx:id="temporizadorPane" prefHeight="220.0" prefWidth="340.0" styleClass="timer-panel" AnchorPane.leftAnchor="136.0" AnchorPane.topAnchor="751.0">
 
@@ -338,6 +321,17 @@
 
             </children>
         </HBox>
+      <Label fx:id="textUltimoResultado" alignment="CENTER" contentDisplay="CENTER" layoutX="588.0" layoutY="843.0" prefHeight="33.0" prefWidth="376.0" styleClass="last-result" text="Último resultado" textAlignment="CENTER" textOverrun="CLIP">
+         <font>
+            <Font size="15.0" />
+         </font>
+      </Label>
+        <Label fx:id="ultimoResultadoLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="926.0" layoutY="805.0" prefHeight="121.0" prefWidth="118.0" styleClass="roulette-last-result" text="?" textAlignment="CENTER" textOverrun="CLIP" />
+        <Button fx:id="confirmarGiroButton" disable="true" layoutX="1263.0" layoutY="885.0" mnemonicParsing="false" onAction="#confirmarGiro" prefHeight="90.0" prefWidth="351.0" styleClass="dark-button" text="Confirmar giro">
+         <font>
+            <Font size="5.0" />
+         </font>
+      </Button>
 
     </children>
 </AnchorPane>

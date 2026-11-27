@@ -270,13 +270,19 @@
     -fx-text-fill: white;
 }
 .roulette-last-result {
-    -fx-font-size: 24px;
+    -fx-background-color: #191919;
+    -fx-background-radius: 24;
+    -fx-border-color: #D9D9D9;
+    -fx-border-width: 4;
+    -fx-border-radius: 24;
+    -fx-effect: dropshadow(
+            gaussian, rgba(0, 0, 0, 0.16), 20, 0, 0, 8
+    );
     -fx-font-weight: bold;
-    -fx-text-fill: #191919;
-    -fx-background-color: #F3F3F3;
-    -fx-background-radius: 12;
-    -fx-border-color: #191919;
-    -fx-border-width: 2;
-    -fx-border-radius: 12;
-    -fx-padding: 6 16 6 16;
+    -fx-font-size: 25px;
+    -fx-text-fill: white;
+}
+.last-result{
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
 }

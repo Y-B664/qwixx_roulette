@@ -110,6 +110,7 @@ public class VentanaJuegoController {
     private boolean saltoIzquierdaActivo = false;
     private boolean doblePuntajeActivo = false;
     private boolean seguroApuestaActivo = false;
+    private boolean comodinApuestaActivo = false;
 
     public VentanaJuegoController() {
         this.daoRegistro = crearDaoSeguro();
@@ -291,7 +292,6 @@ public class VentanaJuegoController {
         ponerFilasCarton();
         actualizarFallos();
         actualizarPuntajesCarton();
-
         Partida partidaActual = gestorPartida.iniciarPartida(2, jugador);
         inicializarTemporizador(partidaActual != null ? partidaActual.getTiempoPorTurnoSegundos() : 60);
 
@@ -325,7 +325,8 @@ public class VentanaJuegoController {
         gestorTienda.generarOfertaAleatoria();
         actualizarBotonPowerUps();
 
-        Apuesta apuestaInicial = solicitarApuestaInicialJavaFX();
+        Apuesta apuestaInicial = solicitarApuesta("APUESTA INICIAL OBLIGATORIA","Saldo inicial: 5 puntos de casino • Rival: " + nombreBotRival +
+                " (" + obtenerTextoDificultad(dificultadBot) + ")");
         if (apuestaInicial == null) {
             return false;
         }
@@ -695,6 +696,11 @@ public class VentanaJuegoController {
                 this.seguroApuestaActivo = true;
                 yield "Recibiste +3 puntos de respaldo y tu próxima apuesta quedó protegida.";
             }
+            case "Apuesta" -> {
+                this.comodinApuestaActivo = true;
+                ejecutarApuesta();
+                yield "Puedes realizar tu apuesta";
+            }
             default -> "Comodín \"" + nombre + "\" activado en tu turno.";
         };
 
@@ -704,6 +710,35 @@ public class VentanaJuegoController {
         }
 
         mostrarModalInstruccion("Comodín Activado", detalleActivacion);
+    }
+
+    private void ejecutarApuesta(){
+        Apuesta apuesta = solicitarApuesta("APUESTA","Piensa bien tu apuesta");
+        if (apuesta == null) {
+            return;
+        }
+        if (apuesta.getMonto() > jugador.getSaldoPuntos()) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Saldo insuficiente",
+                    "No tienes suficientes puntos para realizar esta apuesta.");
+            return;
+        }
+        if (!gestorApuesta.hacerApuesta(apuesta)) {
+            mostrarAlerta(Alert.AlertType.ERROR, "Apuesta inválida",
+                    "No se pudo registrar la apuesta.");
+            return;
+        }
+        jugador.setSaldoPuntos(jugador.getSaldoPuntos() - apuesta.getMonto());
+        actualizarSaldoJugador();
+        girarRuleta(resultado ->{
+            this.resultadoActual = resultado;
+                if(esApuestaGanadora(apuesta,resultado)){
+                    int premio = gestorApuesta.calcularPagoDinamico();
+                    jugador.setSaldoPuntos((jugador.getSaldoPuntos() + premio));
+                }
+                actualizarSaldoJugador();
+        });
+
+
     }
 
     private boolean quitarUltimoFallo() {
@@ -1010,7 +1045,7 @@ public class VentanaJuegoController {
         dialog.show();
     }
 
-    private Apuesta solicitarApuestaInicialJavaFX() {
+    private Apuesta solicitarApuesta(String titulo, String mensaje) {
         final Apuesta[] resultado = {null};
 
         Stage modal = new Stage();
@@ -1030,11 +1065,10 @@ public class VentanaJuegoController {
                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 24, 0, 0, 8);
                 """);
 
-        Label lblTitulo = new Label("APUESTA INICIAL OBLIGATORIA");
+        Label lblTitulo = new Label(titulo);
         lblTitulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #191919;");
 
-        Label lblSub = new Label("Saldo inicial: 5 puntos de casino • Rival: " + nombreBotRival +
-                " (" + obtenerTextoDificultad(dificultadBot) + ")");
+        Label lblSub = new Label(mensaje);
         lblSub.setStyle("-fx-font-size: 14px; -fx-text-fill: #555555;");
 
         ToggleGroup grupoTipo = new ToggleGroup();
@@ -1342,8 +1376,18 @@ public class VentanaJuegoController {
         if (ultimoResultadoLabel == null || resultado == null) {
             return;
         }
-        String color = resultado.getColor() == null ? "Sin color" : resultado.getColor().name();
-        ultimoResultadoLabel.setText("Último resultado: " + resultado.getValor() + " - " + color);
+        datos.Color color = resultado.getColor() == null ? datos.Color.NEGRO : resultado.getColor();
+        String colorStyle = switch (color){
+            case ROJO -> "-fx-background-color: #E53935;";
+            case VERDE -> "-fx-background-color: #2E7D32;";
+            case AMARILLO -> "-fx-background-color: #FBC02D;";
+            case AZUL -> "-fx-background-color: #1E88E5;";
+            default -> "-fx-background-color: #191919;";
+
+        };
+        ultimoResultadoLabel.setStyle(colorStyle);
+        confirmarGiroButton.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-padding: 0 10 0 10;");
+        ultimoResultadoLabel.setText(String.valueOf(resultado.getValor()));
     }
 
     private void mostrarModalResultadoRuleta(CasillaRuleta resultado, Runnable alCerrar) {
@@ -1612,7 +1656,6 @@ public class VentanaJuegoController {
                 default -> { }
             }
         }
-
         int fallos = cartonJugador.getFallos();
         int penalizacion = fallos * PUNTOS_POR_FALLO;
         int total = (ptsRojo + ptsAmarillo + ptsVerde + ptsAzul) - penalizacion;
@@ -1708,7 +1751,8 @@ public class VentanaJuegoController {
         }
         if (!cumpleCondicionesCierre(fila)) {
             int valorFinal = fila.getColor() == datos.Color.ROJO
-                    || fila.getColor() == datos.Color.AMARILLO ? 12 : 2;
+                    || fila.getColor() == datos.Color.AMARILLO ? 1 : fila.getColor() == datos.Color.VERDE
+                    || fila.getColor() == datos.Color.AZUL ? 12:0;
             mostrarAlerta(Alert.AlertType.INFORMATION, "No se puede bloquear la fila",
                     "Debes marcar el " + valorFinal + " y tener al menos 5 números marcados en esa fila.");
             return;
@@ -1746,13 +1790,12 @@ public class VentanaJuegoController {
         }
         int valorFinal;
         if (fila.getColor() == datos.Color.ROJO || fila.getColor() == datos.Color.AMARILLO) {
-            valorFinal = 12;
+            valorFinal = 1;
         } else if (fila.getColor() == datos.Color.VERDE || fila.getColor() == datos.Color.AZUL) {
-            valorFinal = 2;
+            valorFinal = 12;
         } else {
             return false;
         }
-
         int numerosMarcados = 0;
         boolean casillaFinalMarcada = false;
         for (int i = 0; i < casillas.length - 1; i++) {
@@ -1845,4 +1888,5 @@ public class VentanaJuegoController {
         finalizarYAbrirResultados();
         return true;
     }
+
 }
